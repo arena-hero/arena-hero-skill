@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arena Hero"
+  short_description: "Create tactics or play Arena Hero directly"
+  default_prompt: "Use $arena-hero to create a tactic or play Arena Hero directly."

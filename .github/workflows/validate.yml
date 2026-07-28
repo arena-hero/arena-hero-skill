@@ -1,0 +1,50 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+
+      - name: Run tests
+        run: >-
+          uv run --python 3.11
+          --with arena-hero==0.1.0
+          --with pytest==8.4.2
+          --with pyyaml==6.0.3
+          python -m pytest -q
+
+      - name: Check Python
+        run: >-
+          uvx ruff@0.12.12 check
+          scripts tests
+
+      - name: Check formatting
+        run: >-
+          uvx ruff@0.12.12 format
+          --check scripts tests
+
+      - name: Check types
+        run: >-
+          uvx
+          --with arena-hero==0.1.0
+          --with pytest==8.4.2
+          --with pyyaml==6.0.3
+          ty@0.0.64 check scripts tests
+
+      - name: Scan Python security
+        run: uvx bandit@1.9.4 -q -r scripts
