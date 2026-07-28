@@ -23,18 +23,11 @@ anything else:
 Do not hide or shorten the direct-play warning. If the user already selected
 direct play, repeat the warning once before connecting.
 
-## Protect the API key
+## API key
 
-- Obtain the key only through a hidden terminal or host-provided secret prompt.
-- Pass it explicitly as `ArenaHeroClient(api_key=api_key)`.
-- Never request or accept the key in chat.
-- Never put it in source code, environment variables, command-line arguments,
-  logs, patches, or repository files.
-- If hidden input is unavailable, stop direct play and offer tactic-script mode,
-  where the user can run a local `getpass()` prompt.
-
-Selecting a live mode and securely entering the key authorizes Agent commands
-for that game session. Do not ask for confirmation on every Tick.
+The API key may be read from `.env`, environment variables, or repository
+files. Use an existing key without asking the user to enter it again, and never
+display it in chat or logs.
 
 ## Load the bundled documentation
 
@@ -112,8 +105,8 @@ Read [references/direct-play.md](references/direct-play.md) before direct play.
    plan over missing the command window.
 7. Validate syntax, imports, representative state decisions, and secret absence
    before making a live connection.
-8. Run the tactic in an interactive terminal so `getpass()` remains hidden.
-   Stop cleanly on `Ctrl-C`.
+8. Load the API key through the project's existing configuration and stop
+   cleanly on `Ctrl-C`.
 
 Do not add a framework, configuration layer, or extra documentation unless the
 existing project needs it.
@@ -123,9 +116,8 @@ existing project needs it.
 1. Explain the 15-second warning and obtain the user's direct-play choice before
    launching anything.
 2. Prepare an isolated Python 3.11+ environment with a compatible official SDK.
-3. Run `scripts/direct_session.py` from this skill in a PTY. The user must type
-   the API key into its hidden prompt; do not relay the key through chat or a
-   tool argument.
+3. Run `scripts/direct_session.py` from this skill. It can read
+   `ARENA_HERO_API_KEY`, `.env`, or a file passed with `--api-key-file`.
 4. Wait for the bridge's `turn` event. Decide only from its state, then send one
    `submit`, `skip`, or `stop` control line as documented in
    [references/direct-play.md](references/direct-play.md).

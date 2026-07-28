@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import queue
 import sys
 import threading
@@ -12,6 +13,7 @@ import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from getpass import getpass
+from pathlib import Path
 from typing import Any, Literal, Protocol, TextIO
 
 from arena_hero import (
@@ -29,6 +31,7 @@ DEFAULT_BASE_URL = "https://api.arenahero.io"
 VIEWER_URL = "https://app.arenahero.io/arena"
 DEFAULT_DECISION_TIMEOUT = 8.0
 MAX_DECISION_TIMEOUT = 12.0
+API_KEY_ENV = "ARENA_HERO_API_KEY"
 
 
 class DirectClient(Protocol):
@@ -62,6 +65,65 @@ class Control:
 
     kind: ControlKind
     plan: CommandPlan | None = None
+
+
+def _api_key_from_env_file(path: Path) -> str | None:
+    """Read ARENA_HERO_API_KEY from a small dotenv-style file."""
+
+    for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line.removeprefix("export ").lstrip()
+        name, separator, value = line.partition("=")
+        if separator and name.strip() == API_KEY_ENV:
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+                value = value[1:-1]
+            return value or None
+    return None
+
+
+def load_api_key(
+    *,
+    api_key_file: Path | None = None,
+    env_file: Path | None = None,
+    can_prompt: bool | None = None,
+    prompt: Callable[[str], str] | None = None,
+) -> str:
+    """Load an API key from a file, environment, .env, or hidden prompt."""
+
+    if api_key_file is not None:
+        content = api_key_file.read_text(encoding="utf-8-sig").strip()
+        key = _api_key_from_env_file(api_key_file)
+        if key is None and "\n" not in content:
+            key = content
+        if not key:
+            raise ValueError(f"No API key found in {api_key_file}")
+        return key
+
+    if key := os.environ.get(API_KEY_ENV, "").strip():
+        return key
+
+    selected_env_file = env_file or Path.cwd() / ".env"
+    if selected_env_file.is_file():
+        if key := _api_key_from_env_file(selected_env_file):
+            return key
+        if env_file is not None:
+            raise ValueError(f"{API_KEY_ENV} is missing from {selected_env_file}")
+    elif env_file is not None:
+        raise ValueError(f"Environment file does not exist: {selected_env_file}")
+
+    if can_prompt is None:
+        can_prompt = sys.stdin.isatty()
+    if not can_prompt:
+        raise ValueError(f"Set {API_KEY_ENV}, add it to .env, or pass --api-key-file")
+
+    key = (prompt or getpass)("Arena Hero API key: ").strip()
+    if not key:
+        raise ValueError("API key cannot be empty")
+    return key
 
 
 def emit(output: TextIO, payload: dict[str, Any]) -> None:
@@ -289,12 +351,7 @@ def run_direct_session(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Direct Arena Hero bridge. The API key is accepted only from a "
-            "hidden interactive prompt."
-        )
-    )
+    parser = argparse.ArgumentParser(description="Direct Arena Hero bridge.")
     parser.add_argument(
         "--base-url",
         default=DEFAULT_BASE_URL,
@@ -309,6 +366,16 @@ def build_parser() -> argparse.ArgumentParser:
             f"(default: {DEFAULT_DECISION_TIMEOUT}, max: {MAX_DECISION_TIMEOUT})"
         ),
     )
+    parser.add_argument(
+        "--env-file",
+        type=Path,
+        help=f"dotenv file containing {API_KEY_ENV} (default: .env when present)",
+    )
+    parser.add_argument(
+        "--api-key-file",
+        type=Path,
+        help=f"file containing a raw key or a {API_KEY_ENV}=... line",
+    )
     return parser
 
 
@@ -321,22 +388,18 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
-    if not sys.stdin.isatty():
-        print(
-            "Direct play requires an interactive TTY for hidden API-key input. "
-            "Do not pipe or pass the key as an argument.",
-            file=sys.stderr,
-        )
-        return 2
-
     print(
         "WARNING: every Tick has only a 15-second command window. "
         "Direct play cannot guarantee it will submit in time.",
         file=sys.stderr,
     )
-    api_key = getpass("Arena Hero API key: ")
-    if not api_key:
-        print("API key cannot be empty.", file=sys.stderr)
+    try:
+        api_key = load_api_key(
+            api_key_file=args.api_key_file,
+            env_file=args.env_file,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"Cannot load API key: {exc}", file=sys.stderr)
         return 2
 
     try:

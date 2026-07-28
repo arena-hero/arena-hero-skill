@@ -62,14 +62,10 @@ reasoning, and tool latency use part of that time, so direct play cannot
 guarantee an on-time submission and may miss consecutive Ticks. Use a tactic
 script for reliable continuous play.
 
-## API key safety
+## API key
 
-The skill accepts an Arena Hero API key only through a hidden terminal or
-host-provided secret prompt. It must never enter chat, source code, environment
-variables, command-line arguments, logs, patches, or repository files.
-
-If secure hidden input is unavailable, direct play stops and offers tactic
-script mode instead.
+The Skill can read the key from `ARENA_HERO_API_KEY`, `.env`, or a repository
+file. It does not print the key in chat or logs.
 
 ## Watch the game
 

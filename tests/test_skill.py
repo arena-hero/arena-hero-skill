@@ -66,13 +66,18 @@ def test_skill_metadata_and_references() -> None:
         assert (REFERENCES / filename).is_file()
 
 
-def test_api_key_has_no_unsafe_input_path() -> None:
+def test_api_key_sources_do_not_expose_the_value() -> None:
     script = (ROOT / "scripts/direct_session.py").read_text()
-    assert "getpass(" in script
-    assert "--api-key" not in script
-    assert "os.environ" not in script
-    assert "environ[" not in script
+    assert "from getpass import getpass" in script
+    assert "--api-key-file" in script
+    assert "--env-file" in script
+    assert "os.environ.get(API_KEY_ENV" in script
     assert "Authorization" not in script
+
+    skill = (ROOT / "SKILL.md").read_text()
+    assert "environment variables" in skill
+    assert "repository" in skill
+    assert "never\ndisplay it in chat or logs" in skill
 
 
 def test_agent_metadata_matches_skill() -> None:

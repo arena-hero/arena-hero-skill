@@ -6,6 +6,7 @@ import io
 import json
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -21,6 +22,7 @@ from arena_hero import (
 
 from scripts.direct_session import (
     ControlError,
+    load_api_key,
     main,
     parse_control,
     run_direct_session,
@@ -149,6 +151,57 @@ def test_parse_submit_for_current_tick() -> None:
 def test_parse_control_rejects_stale_or_malformed_input(payload: object) -> None:
     with pytest.raises(ControlError):
         parse_control(json.dumps(payload), current_tick=9)
+
+
+def test_load_api_key_from_environment(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("ARENA_HERO_API_KEY", DUMMY_API_KEY)
+
+    assert load_api_key(can_prompt=False) == DUMMY_API_KEY
+
+
+def test_load_api_key_from_dotenv(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("ARENA_HERO_API_KEY", raising=False)
+    (tmp_path / ".env").write_text(
+        f'ARENA_HERO_API_KEY="{DUMMY_API_KEY}"\n',
+        encoding="utf-8",
+    )
+
+    assert load_api_key(can_prompt=False) == DUMMY_API_KEY
+
+
+def test_load_api_key_from_repository_file(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("ARENA_HERO_API_KEY", "environment-key")
+    key_file = tmp_path / "arena-key.txt"
+    key_file.write_text(DUMMY_API_KEY, encoding="utf-8")
+
+    assert load_api_key(api_key_file=key_file, can_prompt=False) == DUMMY_API_KEY
+
+
+def test_load_api_key_uses_hidden_prompt_as_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("ARENA_HERO_API_KEY", raising=False)
+
+    assert (
+        load_api_key(
+            can_prompt=True,
+            prompt=lambda _message: DUMMY_API_KEY,
+        )
+        == DUMMY_API_KEY
+    )
 
 
 def test_direct_session_submits_and_emits_protocol_events() -> None:

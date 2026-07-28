@@ -35,6 +35,7 @@ Prefer the synchronous client unless the surrounding application already uses
 `asyncio`.
 
 ```python
+import os
 from getpass import getpass
 
 from arena_hero import ArenaHeroClient
@@ -54,8 +55,11 @@ def play(api_key: str) -> None:
 
 
 if __name__ == "__main__":
-    play(getpass("Arena Hero API key: "))
+    play(os.environ.get("ARENA_HERO_API_KEY") or getpass("Arena Hero API key: "))
 ```
+
+It is also fine for the project to load the key from `.env` or another
+repository file and pass it to `play()`.
 
 The SDK receives WebSocket state, reconnects, validates models, submits complete
 plans, and safely retries exact request bodies. Do not rebuild those parts.

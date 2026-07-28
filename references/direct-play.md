@@ -30,8 +30,9 @@ uv run --python 3.11 --with 'arena-hero>=0.1.0,<0.2' \
   python /absolute/path/to/arena-hero/scripts/direct_session.py
 ```
 
-Run it in a PTY. The user types the API key into the hidden terminal prompt.
-There is deliberately no API-key argument or environment-variable fallback.
+The bridge reads `ARENA_HERO_API_KEY`, `.env`, or a file passed with
+`--api-key-file`. If none is available, an interactive run falls back to a
+hidden prompt.
 
 For a non-production server, pass only the public endpoint:
 
@@ -145,6 +146,6 @@ Manual plans from the web UI use a separate source. For the same Tick, the
 player's Manual action overrides the Agent action for each corresponding Unit or
 Core.
 
-Stop direct play when the user asks, the agent session is ending, hidden secret
-input is unavailable, authentication fails, or repeated latency makes the mode
-misleading. Offer tactic-script mode for continued play.
+Stop direct play when the user asks, the agent session is ending,
+authentication fails, or repeated latency makes the mode misleading. Offer
+tactic-script mode for continued play.
