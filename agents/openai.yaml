@@ -1,4 +1,4 @@
 interface:
   display_name: "Arena Hero"
-  short_description: "Create tactics or play Arena Hero directly"
-  default_prompt: "Use $arena-hero to create a tactic or play Arena Hero directly."
+  short_description: "Create tactics with complete Arena Hero docs"
+  default_prompt: "Use $arena-hero to create a tactic or work with the complete Arena Hero rules, API, and Python SDK."

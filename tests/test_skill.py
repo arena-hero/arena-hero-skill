@@ -5,9 +5,29 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import arena_hero
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+REFERENCES = ROOT / "references"
+
+BUNDLED_DOCUMENTATION = {
+    "agent-quickstart.md",
+    "agent-command-loop.md",
+    "api-overview.md",
+    "api-websocket.md",
+    "api-commands.md",
+    "api-state-model.md",
+    "api-resolution-results.md",
+    "api-errors.md",
+    "sdk-quickstart.md",
+    "sdk-reference.md",
+    "reference-numbers.md",
+    "reference-glossary.md",
+    "reference-source-and-version.md",
+    "openapi.yaml",
+    "asyncapi.yaml",
+}
 
 
 def frontmatter() -> dict[str, object]:
@@ -33,12 +53,17 @@ def test_skill_metadata_and_references() -> None:
     assert "completely" in skill
     assert "references/tactic-authoring.md" in skill
     assert "references/direct-play.md" in skill
+    for filename in BUNDLED_DOCUMENTATION:
+        assert f"references/{filename}" in skill
     assert "[TODO" not in skill
 
     assert (ROOT / "scripts/direct_session.py").is_file()
+    assert (ROOT / "scripts/sync_references.py").is_file()
     assert (ROOT / "references/game-rules.md").is_file()
     assert (ROOT / "references/tactic-authoring.md").is_file()
     assert (ROOT / "references/direct-play.md").is_file()
+    for filename in BUNDLED_DOCUMENTATION:
+        assert (REFERENCES / filename).is_file()
 
 
 def test_api_key_has_no_unsafe_input_path() -> None:
@@ -65,8 +90,11 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "Direct play" in normalized
     assert "15-second command window" in normalized
     assert "cannot guarantee" in normalized
-    assert "Complete rules included" in normalized
+    assert "Complete documentation included" in normalized
     assert "references/game-rules.md" in normalized
+    assert "references/sdk-quickstart.md" in normalized
+    assert "references/api-overview.md" in normalized
+    assert "OpenAPI and AsyncAPI" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
 
 
@@ -104,3 +132,117 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
     }
     for rule in required_rules:
         assert rule in rules
+
+
+def test_bundled_api_and_sdk_documentation_is_complete() -> None:
+    expected_markers = {
+        "agent-quickstart.md": {
+            "# Agent quickstart",
+            "wss://api.arenahero.io/api/v1/game/ws",
+            "POST /api/v1/game/commands",
+        },
+        "agent-command-loop.md": {
+            "# Reliable command loop",
+            "15-second window",
+            "received",
+        },
+        "api-overview.md": {
+            "# API overview",
+            "api-websocket.md",
+            "openapi.yaml",
+            "asyncapi.yaml",
+        },
+        "api-websocket.md": {
+            "# WebSocket",
+            'type": "tick',
+            'type": "state',
+            'type": "received',
+            "Close codes",
+        },
+        "api-commands.md": {
+            "# Command API",
+            "## Plan body",
+            "PICKUP_BEACON",
+            "DROP_BEACON",
+            "Idempotency-Key",
+        },
+        "api-state-model.md": {
+            "# State model",
+            "PlayerState",
+            "Champion Beacon",
+            "### Terrain",
+        },
+        "api-resolution-results.md": {
+            "# Resolution results",
+            "CORE_SPAWN_SUCCEEDED",
+            "SHOT_MISSED",
+            "RESPAWN_DELAYED",
+        },
+        "api-errors.md": {
+            "# Errors and recovery",
+            "COMMAND_WINDOW_CLOSED",
+            "INVALID_COMMAND",
+            "COMMAND_RATE_LIMITED",
+        },
+        "sdk-quickstart.md": {
+            "# Quickstart",
+            "ArenaHeroClient",
+            "AsyncArenaHeroClient",
+            "turn.submit()",
+        },
+        "sdk-reference.md": {
+            "# API reference",
+            "Complete public export catalog",
+            "TurnClosedError",
+            "latest_receipts",
+        },
+        "reference-numbers.md": {
+            "# Rules at a glance",
+            "Global command window",
+            "Core migration",
+        },
+        "reference-glossary.md": {
+            "# Glossary",
+            "**Complete plan**",
+            "**World snapshot**",
+        },
+        "reference-source-and-version.md": {
+            "# Source and version policy",
+            "Public contract | v0.1",
+            "Python SDK",
+        },
+    }
+
+    for filename, markers in expected_markers.items():
+        content = (REFERENCES / filename).read_text()
+        for marker in markers:
+            assert marker in content, f"{filename} is missing {marker!r}"
+
+    sdk_reference = (REFERENCES / "sdk-reference.md").read_text()
+    for public_name in arena_hero.__all__:
+        assert f"`{public_name}`" in sdk_reference
+
+
+def test_bundled_openapi_and_asyncapi_are_valid() -> None:
+    openapi = yaml.safe_load((REFERENCES / "openapi.yaml").read_text())
+    asyncapi = yaml.safe_load((REFERENCES / "asyncapi.yaml").read_text())
+
+    assert openapi["openapi"] == "3.1.0"
+    assert "/api/v1/game/commands" in openapi["paths"]
+    assert openapi["components"]["schemas"]["CommandPlan"]
+
+    assert asyncapi["asyncapi"] == "3.1.0"
+    assert asyncapi["channels"]["gameStream"]
+    messages = asyncapi["components"]["messages"]
+    assert {"TickMessage", "StateMessage", "ReceivedMessage"} <= set(messages)
+
+
+def test_bundled_reference_links_resolve_locally() -> None:
+    for path in REFERENCES.glob("*.md"):
+        content = path.read_text()
+        for href in re.findall(r"\]\(([^)]+)\)", content):
+            if href.startswith(("https://", "http://", "#", "mailto:")):
+                continue
+            target_name = href.partition("#")[0]
+            target = path.parent / target_name
+            assert target.is_file(), f"{path.name} links to missing {target_name}"

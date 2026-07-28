@@ -6,6 +6,11 @@ official Python SDK.
 Read [game-rules.md](game-rules.md) completely before starting the bridge. Do
 not spend the live command window discovering basic mechanics.
 
+Use the bundled [command model](api-commands.md), [state model](api-state-model.md),
+and [resolution results](api-resolution-results.md) when interpreting bridge
+payloads. Read [sdk-reference.md](sdk-reference.md) when diagnosing the bridge's
+official SDK behavior.
+
 ## Required warning
 
 Tell the user before mode selection:

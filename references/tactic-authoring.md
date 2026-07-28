@@ -5,13 +5,16 @@ read the complete bundled rules:
 
 - [Complete Arena Hero v0.1 rules](game-rules.md)
 
-Use these online sources to check the current contract and SDK:
+Use the bundled documentation while authoring:
 
-- Rule source and version: <https://doc.arenahero.io/reference/source-and-version>
-- Reliable command loop: <https://doc.arenahero.io/agent/command-loop>
-- Python SDK quickstart: <https://doc.arenahero.io/sdk/quickstart>
-- Python SDK reference: <https://doc.arenahero.io/sdk/reference>
-- Package: <https://pypi.org/project/arena-hero/>
+- [Source and version policy](reference-source-and-version.md)
+- [Reliable command loop](agent-command-loop.md)
+- [Python SDK quickstart](sdk-quickstart.md)
+- [Complete Python SDK reference](sdk-reference.md)
+- [Complete command API](api-commands.md)
+- [Complete state model](api-state-model.md)
+- [Resolution results](api-resolution-results.md)
+- [Errors and recovery](api-errors.md)
 
 Never infer a numeric rule from an enum name, an old tactic, or general game
 knowledge. If the live contract is newer than the bundled v0.1 rules, stop and
@@ -97,7 +100,10 @@ Do not claim this default is optimal.
 Use `turn.workers`, `turn.vanguards`, `turn.rangers`, `turn.core`,
 `turn.visible_enemies`, `turn.resource_cells`, and `turn.obstacle_cells`.
 Controller calls only queue actions. Call `turn.submit()` once after the full
-plan is ready.
+plan is ready. Look up every available client argument, controller method,
+model, action, enum, receipt, and exception in
+[sdk-reference.md](sdk-reference.md); do not infer an SDK interface from these
+examples.
 
 Every later submission for the same Tick replaces the complete earlier Agent
 plan. Never assume omitted actions are merged from an earlier submission.

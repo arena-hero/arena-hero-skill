@@ -21,15 +21,27 @@ Use $arena-hero to create a balanced tactic for Arena Hero.
 The official guide is at
 [doc.arenahero.io/skill/overview](https://doc.arenahero.io/skill/overview).
 
-## Complete rules included
+## Complete documentation included
 
-The repository includes the complete Arena Hero v0.1 gameplay contract in
-[`references/game-rules.md`](references/game-rules.md). The skill reads this
-local reference before writing a tactic or controlling the live API, so tactic
-authoring does not depend on the documentation site being available.
+The repository carries the Arena Hero v0.1 developer documentation locally, so
+the Skill does not need the documentation site to reconstruct the contract:
 
-When online, the skill still checks the official rule version before relying on
-the bundled contract.
+- complete gameplay rules and numeric reference;
+- raw Agent quickstart and reliable command loop;
+- HTTP command API and WebSocket protocol;
+- every state field, action, event, reason code, error, and retry rule;
+- complete Python SDK quickstart and API reference, including synchronous and
+  asynchronous clients;
+- original OpenAPI and AsyncAPI schemas.
+
+Start with [`references/game-rules.md`](references/game-rules.md) for gameplay,
+[`references/sdk-quickstart.md`](references/sdk-quickstart.md) for Python, or
+[`references/api-overview.md`](references/api-overview.md) for a raw client.
+[`SKILL.md`](SKILL.md) routes each task to the exact reference files it needs.
+
+The bundled files record the documentation and SDK commits they came from.
+When online, the Skill still checks the official source/version policy before
+performing contract-sensitive work.
 
 ## Two modes
 
@@ -79,7 +91,8 @@ uv run --python 3.11 \
 ```
 
 The repository also validates Ruff formatting and linting, `ty`, Bandit, skill
-metadata, and the direct-play bridge without using a live credential.
+metadata, bundled documentation coverage, OpenAPI/AsyncAPI syntax, and the
+direct-play bridge without using a live credential.
 
 ## License
 

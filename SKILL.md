@@ -1,6 +1,6 @@
 ---
 name: arena-hero
-description: Create, test, and run Python tactics for Arena Hero or play the game directly through its API. Use when an agent is asked to build or improve an Arena Hero tactic, control Units or a Core, connect to the live game, run a bot, inspect live Turns, submit plans, or help a player watch the agent play.
+description: Create, test, and run Python tactics for Arena Hero, play directly through its API, or explain its rules, protocol, state, commands, events, errors, and Python SDK. Use when an agent is asked to build or improve an Arena Hero tactic, control Units or a Core, connect to the live game, build a client or frontend, inspect live Turns, submit plans, use the official SDK, or help a player watch the agent play. Includes complete bundled gameplay, HTTP, WebSocket, OpenAPI, AsyncAPI, and Python SDK documentation.
 ---
 
 # Arena Hero
@@ -36,37 +36,65 @@ direct play, repeat the warning once before connecting.
 Selecting a live mode and securely entering the key authorizes Agent commands
 for that game session. Do not ask for confirmation on every Tick.
 
+## Load the bundled documentation
+
+Treat this skill as a self-contained documentation package. Do not depend on the
+documentation website to reconstruct rules, wire models, or SDK behavior.
+
+Read the files required by the task:
+
+- **Any rule-dependent tactic or live play:** read
+  [references/game-rules.md](references/game-rules.md) completely. Use
+  [references/reference-numbers.md](references/reference-numbers.md) for a
+  compact timing, cost, range, capacity, and limit lookup, and
+  [references/reference-glossary.md](references/reference-glossary.md) for
+  contract terminology.
+- **Python SDK or tactic script:** read
+  [references/sdk-quickstart.md](references/sdk-quickstart.md), then read
+  [references/sdk-reference.md](references/sdk-reference.md) for every client,
+  Turn controller, model, action, enum, receipt, and exception used. Also read
+  [references/tactic-authoring.md](references/tactic-authoring.md) before
+  creating or changing a tactic.
+- **Raw API client, custom frontend, or protocol implementation:** start with
+  [references/agent-quickstart.md](references/agent-quickstart.md) and
+  [references/agent-command-loop.md](references/agent-command-loop.md). Read
+  [references/api-overview.md](references/api-overview.md), then the complete
+  local references for
+  [WebSocket](references/api-websocket.md),
+  [commands](references/api-commands.md),
+  [state models](references/api-state-model.md),
+  [resolution results](references/api-resolution-results.md), and
+  [errors and recovery](references/api-errors.md) as the task requires.
+- **Generated clients or exact schema work:** read
+  [references/openapi.yaml](references/openapi.yaml) for HTTP and
+  [references/asyncapi.yaml](references/asyncapi.yaml) for WebSocket messages.
+- **Compatibility checks:** read
+  [references/reference-source-and-version.md](references/reference-source-and-version.md).
+
+When the user asks for a complete documentation review, compatibility audit, or
+new client implementation, read every file in the relevant group rather than
+sampling a single overview.
+
+When network access is available, compare the bundled source/version policy with
+<https://doc.arenahero.io/reference/source-and-version>. If the live contract is
+newer or incompatible, stop rule-dependent work and report that this bundle
+must be updated. Never fill a version gap from memory.
+
 ## Establish current context
 
 Before writing a tactic or submitting a plan:
 
-1. Read [references/game-rules.md](references/game-rules.md) completely. It is
-   the bundled Arena Hero v0.1 rule contract and is mandatory in both modes.
-2. When network access is available, check the current
-   [rule source and version](https://doc.arenahero.io/reference/source-and-version).
-   If it describes a later or incompatible contract, stop and update the
-   bundled rules before creating rule-dependent behavior.
-3. Read the relevant connection documentation:
-   - Reliable loop: <https://doc.arenahero.io/agent/command-loop>
-   - Python SDK: <https://doc.arenahero.io/sdk/quickstart>
-   - SDK reference: <https://doc.arenahero.io/sdk/reference>
-4. Inspect the current project before adding files or dependencies.
-5. Use the official `arena-hero` package from PyPI. Do not recreate its HTTP,
+1. Inspect the current project before adding files or dependencies.
+2. Use the official `arena-hero` package from PyPI. Do not recreate its HTTP,
    WebSocket, retry, receipt, or state-model logic.
-6. Treat each `Turn` as a complete authoritative replacement. Never invent
+3. Treat each `Turn` as a complete authoritative replacement. Never invent
    UUIDs, coordinates, enemies, resources, or actions.
-7. Build and submit only a plan for the current Turn. Never retick a stale plan.
-8. Verify every rule-dependent decision against the bundled rules. Never guess
+4. Build and submit only a plan for the current Turn. Never retick a stale plan.
+5. Verify every rule-dependent decision against the bundled rules. Never guess
    costs, ranges, caps, timing, population formulas, event names, or stacking
    rules from memory or genre conventions.
 
-The bundled rules make offline tactic authoring possible. Online documentation
-is still required when checking whether the public contract has changed, not for
-reconstructing the v0.1 mechanics from memory.
-
-Read [references/tactic-authoring.md](references/tactic-authoring.md) when
-creating or changing a tactic. Read
-[references/direct-play.md](references/direct-play.md) before direct play.
+Read [references/direct-play.md](references/direct-play.md) before direct play.
 
 ## Tactic-script mode
 
