@@ -1,14 +1,12 @@
-# Arena Hero v0.1 game rules
+# Arena Hero v0.2 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
-The snapshot matches the public v0.1 rules implemented by Arena Hero server
-commit
-[`d66476a`](https://github.com/arena-hero/arena-hero/commit/d66476a).
-The browsable source is at <https://doc.arenahero.io/rules/world-and-ticks>.
-If the live documentation reports a later or incompatible rule contract, stop
-and update this file before relying on rule-dependent behavior.
+This contract was reviewed against Arena Hero server commit
+[`c655315`](https://github.com/arena-hero/arena-hero/commit/c6553156d8e4512fd6010a10b6500741f023c9da)
+on 29 July 2026. If a live server reports newer or incompatible rules, stop
+rule-dependent play and update this bundle instead of mixing versions.
 
 This reference covers gameplay mechanics. Account registration, OAuth, private
 statistics, API-key management, and operator procedures are intentionally
@@ -52,8 +50,9 @@ Every cell has exactly one terrain kind:
 | `RESOURCE` | yes | no | no | no |
 | `OBSTACLE` | no | no | yes | yes |
 
-Cores and Units occupy cells but are not terrain. Resource cells are permanent
-and infinite. Harvesting does not drain them or change their terrain kind.
+Cores and Units occupy cells but are not terrain. Obstacles and the chunk
+backbone are permanent. Resource nodes are dynamic: one successful harvest
+removes the node and changes that cell back to `EMPTY`.
 
 ### Deterministic infinite generation
 
@@ -61,28 +60,67 @@ and infinite. Harvesting does not drain them or change their terrain kind.
 - Generation uses a permanent secret world seed and a versioned HMAC-SHA256
   contract. Clients never receive the seed.
 - The same seed, generator version, balance, and coordinates always produce the
-  same terrain.
+  same permanent obstacle and backbone layout.
 - Neighboring chunks have deterministic shared boundary passages.
 - Every passable pocket connects to the chunk backbone, although one-cell
   chokepoints are allowed.
 - `[0, 0]` and its route to the chunk backbone are always `EMPTY`, so the
   Champion Beacon cannot be walled off by generation.
 - A Core spawn cell has at least two passable cardinal neighbors.
-- A generator-contract mismatch prevents the service from starting. Changing
-  generation semantics requires a new world database.
+- A generator-contract mismatch prevents the service from starting. A resource
+  contract migration is the exception described below: it preserves world and
+  player state while replacing the legacy resource layout.
 
-### Central resource gradient
+### Dynamic resource-node quota
 
-The world center is `[0, 0]`. Resource density uses Manhattan distance:
+Resources use a per-chunk quota. For chunk coordinate `c`, define:
 
 ```text
-d = abs(x) + abs(y)
-richness(d) = 1 + 256 / (256 + d)
+axis(c) = c       when c >= 0
+axis(c) = -c - 1  when c < 0
+
+ring(cx, cy) = axis(cx) + axis(cy)
+quota(cx, cy) = max(2, floor(16 * 8 / (8 + ring(cx, cy))))
 ```
 
-Resource cells are twice as dense as the baseline at the center. Density falls
-smoothly toward the permanent baseline as distance increases. This gradient
-changes only resource density; obstacle density stays constant.
+The four chunks with `cx` and `cy` each in `{-1, 0}` form ring 0 and each has a
+quota of 16 nodes. Quotas decline with the summed ring and never fall below 2.
+Chunk size remains 32 x 32.
+
+After settlement of every fourth logical Tick, the server counts the resource
+nodes still present in each tracked chunk and adds only the missing number:
+
+```text
+missing = max(0, quota(cx, cy) - current_nodes)
+```
+
+Unharvested nodes stay at their current positions. They do not move, age,
+duplicate, or accumulate above the quota. A successful harvest removes one node
+immediately during the Worker phase; refill happens only at the four-Tick
+boundary after all ordinary Tick resolution.
+
+Refill is deterministic pseudorandom selection using the permanent world seed,
+the resource-contract version, the refill Tick, chunk coordinates, and candidate
+coordinates. Candidate cells must:
+
+- be passable non-obstacle cells in the permanent map;
+- not belong to the chunk backbone;
+- not already contain a resource node;
+- contain no Core in the post-settlement world.
+
+A Unit or the ground Champion Beacon does not disqualify a candidate. Resource
+nodes occupy no entity-capacity slot. Candidate ordering and selection must not
+depend on process randomness, map iteration order, wall-clock time, or unordered
+database results.
+
+Refill emits no global coordinate list and does not reveal fogged cells. A new
+node appears to a player only when its cell is inside that player's current
+vision in a later complete `state`.
+
+At the resource-contract migration boundary, keep the existing world, players,
+Cores, Units, Beacon, Tick, plans, events, and statistics. Replace the legacy
+permanent resource layout with the new dynamic layout in one atomic migration;
+old resource coordinates are not grandfathered.
 
 Coordinates are signed 64-bit integers represented as `[x, y]`.
 
@@ -129,15 +167,19 @@ The following order is part of the rule contract:
    attacks.
 9. Apply damage simultaneously, remove destroyed objects, and process due
    respawns.
-10. Atomically commit the world, results, journal, and new clock.
-11. Announce the next Tick and publish fresh private states.
+10. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
+    its current quota using the post-settlement world.
+11. Atomically commit the world, dynamic resources, results, journal, and new
+    clock.
+12. Announce the next Tick and publish fresh private states.
 
 ### Atomicity, determinism, and recovery
 
 - No client can observe a partially resolved Tick.
 - Map iteration order, wall-clock time, process randomness, and unordered
   database results cannot decide an outcome.
-- The same world state and locked plans produce the same result byte for byte.
+- The same world state, resource layout, locked plans, and refill Tick produce
+  the same result byte for byte.
 - If state preparation fails, the server does not open the command window.
 - If state publication fails, the gate aborts. Recovery reannounces the same
   Tick and opens a new full 15-second window.
@@ -188,9 +230,11 @@ cargo is private and appears only on friendly Workers.
 ### Exploration memory
 
 The server sends only the current view. It does not store or replay a player's
-full explored map. A client may remember previously seen terrain because terrain
-is permanent. A remembered Unit, Core, or Beacon carrier may have moved and
-must not be treated as current truth.
+full explored map. A client may remember permanent obstacles and backbone
+knowledge. Remembered resource nodes are stale hints only: a node may have been
+harvested outside vision, and a later refill may create a different visible node.
+A remembered Unit, Core, resource node, or Beacon carrier must not be treated as
+current truth.
 
 ## Core, production, migration, and upkeep
 
@@ -325,8 +369,14 @@ Worker-specific actions are `HARVEST` and `DEPOSIT`.
 
 - `HARVEST` requires an empty Worker on a `RESOURCE` cell.
 - It collects 1 resource, or 2 if the owner holds the Champion Beacon.
-- Resource cells never deplete. Every eligible colocated Worker gets the full
-  amount.
+- One successful harvest consumes the whole node, whether it grants 1 or 2.
+- When multiple eligible empty Workers harvest the same node in one Tick, only
+  the lowest Worker UUID in ascending raw-byte order succeeds. Every other
+  eligible contender receives `HARVEST_FAILED` with reason
+  `RESOURCE_DEPLETED`.
+- A Worker with cargo receives `HARVEST_FAILED` with `CARGO_FULL` and is not an
+  eligible contender. If no resource node exists at resolution, the failure is
+  `NOT_RESOURCE_CELL`.
 - Bonus cargo already carried remains 2 after the owner loses the Beacon.
 - `DEPOSIT` requires the Worker to share a cell with its own normal, receptive
   Core.
@@ -442,7 +492,8 @@ the next `MOVE` or `START_MOVE`. Closing the frontend stops that route.
 - Pickup grants no shield and performs no repair.
 - Losing the Beacon clamps current Core shield above 5 down to 5.
 - An eligible empty Worker collects 2 instead of 1 while its owner holds the
-  Beacon.
+  Beacon. Both units come from the same consumed node; the bonus does not create
+  or preserve another node.
 - Cargo of 2 stays on the Worker after the bonus is lost and may be deposited
   together.
 - The Beacon follows a Unit whenever its move succeeds.
@@ -467,7 +518,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.1 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.2 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -557,9 +608,9 @@ One static problem atomically rejects the whole request and leaves the previous
 valid plan unchanged.
 
 Dynamic facts resolve later, including moved targets, full destinations,
-contested movement, insufficient resources, Beacon UUID tie-breaking, and
-blocked Ranger lines. These do not reject the POST; they fail during Tick
-resolution.
+contested movement, insufficient resources, Beacon UUID tie-breaking,
+same-node harvest contention or depletion, and blocked Ranger lines. These do
+not reject the POST; they fail during Tick resolution.
 
 ### Ordering and limits
 

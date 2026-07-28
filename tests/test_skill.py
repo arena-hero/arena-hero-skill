@@ -3,10 +3,18 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from pathlib import Path
 
 import arena_hero
+import pytest
 import yaml
+
+from scripts.sync_references import (
+    DOC_RESOURCE_CONTRACT,
+    SDK_RESOURCE_CONTRACT,
+    require_resource_contract,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCES = ROOT / "references"
@@ -100,6 +108,7 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
+    assert "frozen single-use resource-node quota" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
 
 
@@ -124,7 +133,10 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
     required_rules = {
         "15 seconds",
         "32 x 32",
-        "richness(d) = 1 + 256 / (256 + d)",
+        "axis(c) = -c - 1",
+        "quota(cx, cy) = max(2, floor(16 * 8 / (8 + ring(cx, cy))))",
+        "After settlement of every fourth logical Tick",
+        "RESOURCE_DEPLETED",
         "tier = floor(N / 20)",
         "upkeep = tier x (tier + 1) / 2",
         "Worker | 2 | 3 | 5",
@@ -150,6 +162,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "# Reliable command loop",
             "15-second window",
             "received",
+            "consumed or replenished",
         },
         "api-overview.md": {
             "# API overview",
@@ -170,18 +183,21 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "PICKUP_BEACON",
             "DROP_BEACON",
             "Idempotency-Key",
+            "RESOURCE_DEPLETED",
         },
         "api-state-model.md": {
             "# State model",
             "PlayerState",
             "Champion Beacon",
             "### Terrain",
+            "`RESOURCE` positions are current",
         },
         "api-resolution-results.md": {
             "# Resolution results",
             "CORE_SPAWN_SUCCEEDED",
             "SHOT_MISSED",
             "RESPAWN_DELAYED",
+            "RESOURCE_DEPLETED",
         },
         "api-errors.md": {
             "# Errors and recovery",
@@ -194,27 +210,32 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "ArenaHeroClient",
             "AsyncArenaHeroClient",
             "turn.submit()",
+            "RESOURCE_DEPLETED",
         },
         "sdk-reference.md": {
             "# API reference",
             "Complete public export catalog",
             "TurnClosedError",
             "latest_receipts",
+            "RESOURCE_DEPLETED",
         },
         "reference-numbers.md": {
             "# Rules at a glance",
             "Global command window",
             "Core migration",
+            "axis(c)",
         },
         "reference-glossary.md": {
             "# Glossary",
             "**Complete plan**",
             "**World snapshot**",
+            "**Resource point**",
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Public contract | v0.1",
+            "Gameplay rules | v0.2",
             "Python SDK",
+            "Reviewed server commit",
         },
     }
 
@@ -235,11 +256,90 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert openapi["openapi"] == "3.1.0"
     assert "/api/v1/game/commands" in openapi["paths"]
     assert openapi["components"]["schemas"]["CommandPlan"]
+    assert (
+        "RESOURCE_DEPLETED"
+        in openapi["components"]["schemas"]["HarvestAction"]["description"]
+    )
 
     assert asyncapi["asyncapi"] == "3.1.0"
     assert asyncapi["channels"]["gameStream"]
     messages = asyncapi["components"]["messages"]
     assert {"TickMessage", "StateMessage", "ReceivedMessage"} <= set(messages)
+    schemas = asyncapi["components"]["schemas"]
+    assert "disappear" in schemas["TerrainBatch"]["description"]
+    assert "RESOURCE_REFILLED" not in schemas["EventType"]["enum"]
+    assert "RESOURCE_DEPLETED" in schemas["HarvestAction"]["description"]
+
+
+def test_dynamic_resource_contract_is_consistent_across_bundle() -> None:
+    files = {
+        "SKILL.md": (ROOT / "SKILL.md").read_text(),
+        "game-rules.md": (REFERENCES / "game-rules.md").read_text(),
+        "agent-command-loop.md": (REFERENCES / "agent-command-loop.md").read_text(),
+        "api-commands.md": (REFERENCES / "api-commands.md").read_text(),
+        "api-state-model.md": (REFERENCES / "api-state-model.md").read_text(),
+        "api-resolution-results.md": (
+            REFERENCES / "api-resolution-results.md"
+        ).read_text(),
+        "sdk-quickstart.md": (REFERENCES / "sdk-quickstart.md").read_text(),
+        "sdk-reference.md": (REFERENCES / "sdk-reference.md").read_text(),
+        "tactic-authoring.md": (REFERENCES / "tactic-authoring.md").read_text(),
+    }
+
+    required_markers = {
+        "game-rules.md": {
+            "ring(cx, cy) = axis(cx) + axis(cy)",
+            "quota(cx, cy) = max(2, floor(16 * 8 / (8 + ring(cx, cy))))",
+            "only the lowest Worker UUID",
+            "post-settlement world",
+            "old resource coordinates are not grandfathered",
+        },
+        "api-resolution-results.md": {
+            "RESOURCE_DEPLETED",
+            "Replenishment does not create player events",
+        },
+        "sdk-reference.md": {"resource_cells", "RESOURCE_DEPLETED"},
+        "tactic-authoring.md": {
+            "Recompute resource targets",
+            "current visible-node set",
+        },
+    }
+    for filename, markers in required_markers.items():
+        normalized = " ".join(files[filename].split())
+        for marker in markers:
+            assert marker in normalized, f"{filename} is missing {marker!r}"
+
+    combined = "\n".join(files.values())
+    for obsolete in {
+        "Resource cells never deplete",
+        "Resource cells never run out",
+        "permanent and infinite",
+        "richness(d) = 1 + 256 / (256 + d)",
+    }:
+        assert obsolete not in combined
+
+
+@pytest.mark.parametrize(
+    ("repo_name", "requirements"),
+    [
+        ("arena-hero-doc", DOC_RESOURCE_CONTRACT),
+        ("arena-hero-python", SDK_RESOURCE_CONTRACT),
+    ],
+)
+def test_reference_sync_refuses_legacy_resource_sources(
+    tmp_path: Path,
+    repo_name: str,
+    requirements: Mapping[str, tuple[str, ...]],
+) -> None:
+    with pytest.raises(RuntimeError, match="current finite-resource contract"):
+        require_resource_contract(tmp_path, repo_name, requirements)
+
+    for relative_path, markers in requirements.items():
+        path = tmp_path / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(markers))
+
+    require_resource_contract(tmp_path, repo_name, requirements)
 
 
 def test_bundled_reference_links_resolve_locally() -> None:

@@ -23,13 +23,15 @@ The official guide is at
 
 ## Complete documentation included
 
-The repository carries the Arena Hero v0.1 developer documentation locally, so
+The repository carries Arena Hero API v0.1 and gameplay rules v0.2 locally, so
 the Skill does not need the documentation site to reconstruct the contract:
 
 - complete gameplay rules and numeric reference;
 - raw Agent quickstart and reliable command loop;
 - HTTP command API and WebSocket protocol;
 - every state field, action, event, reason code, error, and retry rule;
+- the current v0.2 single-use resource-node quota, refill, visibility, contention,
+  and migration contract;
 - complete Python SDK quickstart and API reference, including synchronous and
   asynchronous clients;
 - original OpenAPI and AsyncAPI schemas.

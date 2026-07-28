@@ -3,7 +3,7 @@
 Use this reference for tactic-script mode. Before making any tactical decision,
 read the complete bundled rules:
 
-- [Complete Arena Hero v0.1 rules](game-rules.md)
+- [Complete Arena Hero v0.2 rules](game-rules.md)
 
 Use the bundled documentation while authoring:
 
@@ -17,7 +17,7 @@ Use the bundled documentation while authoring:
 - [Errors and recovery](api-errors.md)
 
 Never infer a numeric rule from an enum name, an old tactic, or general game
-knowledge. If the live contract is newer than the bundled v0.1 rules, stop and
+knowledge. If the live contract is newer than the bundled v0.2 rules, stop and
 update the bundle; do not fill the gap with a plausible constant.
 
 Add a compatible PyPI release through the project's existing dependency
@@ -69,8 +69,8 @@ plans, and safely retries exact request bodies. Do not rebuild those parts.
 1. **Lifecycle:** `turn.core` can be `None` while respawning. Submit no invented
    actions.
 2. **Immediate survival:** react to visible threats and Core damage.
-3. **Economy:** use `turn.resources`, Worker cargo, resource cells, and Core
-   position.
+3. **Economy:** use `turn.resources`, Worker cargo, resource nodes visible in
+   the current Turn, and Core position.
 4. **Combat:** attack only visible targets with current positions.
 5. **Movement:** avoid visible obstacle cells; remember that fog is not current
    truth.
@@ -82,9 +82,11 @@ plans, and safely retries exact request bodies. Do not rebuild those parts.
 If the requested tactic is underspecified, use a balanced starter policy:
 
 - deposit carried Worker cargo when sharing the Core cell;
-- harvest when an empty Worker stands on a resource;
-- move Workers toward a visible resource or home using a deterministic,
-  obstacle-aware choice;
+- harvest when an empty Worker stands on a resource node visible in this Turn;
+- move Workers toward a currently visible resource or home using a
+  deterministic, obstacle-aware choice;
+- discard a resource target after success, `RESOURCE_DEPLETED`, or current
+  visibility proves that the node disappeared;
 - defend against visible nearby enemies before pursuing distant goals;
 - spawn conservatively so expected upkeep does not starve the Core;
 - leave an object without an action when no legal useful action is known.
@@ -112,6 +114,27 @@ examples.
 Every later submission for the same Tick replaces the complete earlier Agent
 plan. Never assume omitted actions are merged from an earlier submission.
 
+## Recompute resource targets
+
+Treat `turn.resource_cells` as a current visible-node set, not exploration
+memory. A node disappears after one successful harvest. When multiple eligible
+empty Workers act on the same node, only the lowest raw-byte UUID succeeds and
+the others receive `HARVEST_FAILED/RESOURCE_DEPLETED`.
+
+At the start of each decision:
+
+1. process `turn.events` from the previous Tick;
+2. invalidate targets consumed by `HARVEST_SUCCEEDED` or lost through
+   `RESOURCE_DEPLETED`;
+3. replace the visible resource index from `turn.resource_cells`;
+4. discard any remembered target whose cell is visible but absent from that
+   index;
+5. choose again from current visible nodes with deterministic tie-breaking.
+
+Do not wait on an old coordinate for the four-Tick refill. Unharvested nodes
+stay put, but harvested nodes do not return in place and newly refilled nodes
+are known only when visible.
+
 ## Keep decisions testable
 
 Put tactical choices in a function that receives a `Turn`. Test it with
@@ -121,6 +144,8 @@ Cover at least:
 - active state and respawning state;
 - no visible resource or enemy;
 - Worker harvesting and depositing;
+- same-node Worker contention and `RESOURCE_DEPLETED` retargeting;
+- resource disappearance, four-Tick refill, and fog-memory invalidation;
 - legal combat target selection;
 - obstacle-aware movement;
 - no stale controller reuse.
