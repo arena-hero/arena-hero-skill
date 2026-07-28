@@ -1,27 +1,21 @@
 # Tactic authoring
 
-Use this reference for tactic-script mode. The official documentation remains
-authoritative:
+Use this reference for tactic-script mode. Before making any tactical decision,
+read the complete bundled rules:
 
-- Rules: <https://doc.arenahero.io/rules>
+- [Complete Arena Hero v0.1 rules](game-rules.md)
+
+Use these online sources to check the current contract and SDK:
+
+- Rule source and version: <https://doc.arenahero.io/reference/source-and-version>
 - Reliable command loop: <https://doc.arenahero.io/agent/command-loop>
 - Python SDK quickstart: <https://doc.arenahero.io/sdk/quickstart>
 - Python SDK reference: <https://doc.arenahero.io/sdk/reference>
 - Package: <https://pypi.org/project/arena-hero/>
 
-Read the rule page for every mechanic the tactic uses:
-
-| Mechanic | Required source |
-|---|---|
-| Unit stats, costs, and attacks | <https://doc.arenahero.io/rules/units> |
-| Core actions, population, and upkeep | <https://doc.arenahero.io/rules/core-and-economy> |
-| Movement and occupancy | <https://doc.arenahero.io/rules/movement-and-stacking> |
-| Targeting and simultaneous combat | <https://doc.arenahero.io/rules/combat> |
-| Champion Beacon | <https://doc.arenahero.io/rules/champion-beacon> |
-
 Never infer a numeric rule from an enum name, an old tactic, or general game
-knowledge. If a required page is unavailable, omit that rule-dependent behavior
-and state the limitation; do not fill the gap with a plausible constant.
+knowledge. If the live contract is newer than the bundled v0.1 rules, stop and
+update the bundle; do not fill the gap with a plausible constant.
 
 Add a compatible PyPI release through the project's existing dependency
 manager. For a standalone script:

@@ -40,24 +40,29 @@ for that game session. Do not ask for confirmation on every Tick.
 
 Before writing a tactic or submitting a plan:
 
-1. Read the relevant official documentation:
-   - Rules: <https://doc.arenahero.io/rules/world-and-ticks>
+1. Read [references/game-rules.md](references/game-rules.md) completely. It is
+   the bundled Arena Hero v0.1 rule contract and is mandatory in both modes.
+2. When network access is available, check the current
+   [rule source and version](https://doc.arenahero.io/reference/source-and-version).
+   If it describes a later or incompatible contract, stop and update the
+   bundled rules before creating rule-dependent behavior.
+3. Read the relevant connection documentation:
    - Reliable loop: <https://doc.arenahero.io/agent/command-loop>
    - Python SDK: <https://doc.arenahero.io/sdk/quickstart>
    - SDK reference: <https://doc.arenahero.io/sdk/reference>
-2. Inspect the current project before adding files or dependencies.
-3. Use the official `arena-hero` package from PyPI. Do not recreate its HTTP,
+4. Inspect the current project before adding files or dependencies.
+5. Use the official `arena-hero` package from PyPI. Do not recreate its HTTP,
    WebSocket, retry, receipt, or state-model logic.
-4. Treat each `Turn` as a complete authoritative replacement. Never invent
+6. Treat each `Turn` as a complete authoritative replacement. Never invent
    UUIDs, coordinates, enemies, resources, or actions.
-5. Build and submit only a plan for the current Turn. Never retick a stale plan.
-6. Verify every rule-dependent constant and geometry rule from current official
-   documentation. Never guess costs, ranges, caps, timing, population formulas,
-   event names, or stacking rules from memory or genre conventions.
+7. Build and submit only a plan for the current Turn. Never retick a stale plan.
+8. Verify every rule-dependent decision against the bundled rules. Never guess
+   costs, ranges, caps, timing, population formulas, event names, or stacking
+   rules from memory or genre conventions.
 
-If the required official pages cannot be read, do not claim a complete tactic.
-Create only source-independent connection/test scaffolding or stop and explain
-which rule source is unavailable.
+The bundled rules make offline tactic authoring possible. Online documentation
+is still required when checking whether the public contract has changed, not for
+reconstructing the v0.1 mechanics from memory.
 
 Read [references/tactic-authoring.md](references/tactic-authoring.md) when
 creating or changing a tactic. Read

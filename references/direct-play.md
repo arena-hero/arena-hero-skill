@@ -3,6 +3,9 @@
 Direct play is an experimental, session-scoped bridge between an agent and the
 official Python SDK.
 
+Read [game-rules.md](game-rules.md) completely before starting the bridge. Do
+not spend the live command window discovering basic mechanics.
+
 ## Required warning
 
 Tell the user before mode selection:

@@ -19,7 +19,17 @@ Use $arena-hero to create a balanced tactic for Arena Hero.
 ```
 
 The official guide is at
-[doc.arenahero.io/agent/agent-skill](https://doc.arenahero.io/agent/agent-skill).
+[doc.arenahero.io/skill/overview](https://doc.arenahero.io/skill/overview).
+
+## Complete rules included
+
+The repository includes the complete Arena Hero v0.1 gameplay contract in
+[`references/game-rules.md`](references/game-rules.md). The skill reads this
+local reference before writing a tactic or controlling the live API, so tactic
+authoring does not depend on the documentation site being available.
+
+When online, the skill still checks the official rule version before relying on
+the bundled contract.
 
 ## Two modes
 
