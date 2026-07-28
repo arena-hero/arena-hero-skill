@@ -52,3 +52,13 @@ def test_agent_metadata_matches_skill() -> None:
     assert interface["display_name"] == "Arena Hero"
     assert 25 <= len(interface["short_description"]) <= 64
     assert "$arena-hero" in interface["default_prompt"]
+
+
+def test_readme_explains_installation_and_both_modes() -> None:
+    readme = (ROOT / "README.md").read_text()
+    normalized = " ".join(readme.split())
+    assert "Tactic script" in normalized
+    assert "Direct play" in normalized
+    assert "15-second command window" in normalized
+    assert "cannot guarantee" in normalized
+    assert "https://doc.arenahero.io/agent/agent-skill" in normalized
