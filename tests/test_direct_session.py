@@ -45,6 +45,7 @@ def player_state() -> PlayerState:
                     "kind": "CORE",
                     "id": "00000000-0000-4000-8000-000000000001",
                     "controlled": True,
+                    "owner_username": "arena_hero",
                     "position": [0, 0],
                     "hp": 5,
                     "shield": 5,

@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/reference/glossary.md`.
+> Bundled from `arena-hero-doc` revision `92cde5df38c1c7791559582e68ee49aa1cd4fad0`: `docs/reference/glossary.md`.
 
 # Glossary
 
@@ -39,6 +39,11 @@ earlier plan from that source rather than patching it.
 
 `controlled: true` marks an object as belonging to whoever is receiving the state.
 `controlled: false` marks a currently visible enemy.
+
+**Core owner username**
+
+Every Core carries `owner_username` without a leading `@`. It is public while
+that Core is included in the state. Unit owners remain private.
 
 **Core**
 

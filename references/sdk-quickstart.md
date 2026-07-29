@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `9cc5a2054d2375d80a83c67d6da12df3bb2bb149`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `906da720fecb12fa6f224163aa3ad384bc399927`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -129,6 +129,8 @@ Use the filtered collections when possible:
 
 - `turn.workers`, `turn.vanguards`, and `turn.rangers` contain controlled Units.
 - `turn.visible_enemies` contains visible enemy Units and Cores.
+- Every `CoreView` includes `owner_username`; display it as
+  `f"@{core.owner_username}"`. Unit owners remain private.
 - `turn.resource_cells` and `turn.obstacle_cells` are ready for membership
   checks.
 - `turn.events` contains private resolution results from the previous Tick.

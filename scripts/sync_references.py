@@ -55,7 +55,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "WORKER_CARGO_DROPPED",
         "DROPPED_CARGO",
     ),
-    "docs/api/state-model.md": ("dead Workers",),
+    "docs/api/state-model.md": ("dead Workers", "owner_username"),
     "docs/reference/numbers.md": ("axis(c)", "Cargo piles"),
     "docs/reference/source-and-version.md": ("Gameplay rules | v0.4",),
     "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
@@ -63,6 +63,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "RESOURCE_DEPLETED",
         "SELF_DESTRUCT",
         "WORKER_CARGO_DROPPED",
+        "owner_username",
     ),
 }
 
@@ -72,6 +73,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "RESOURCE_DEPLETED",
         "SelfDestructAction",
         "WORKER_CARGO_DROPPED",
+        "owner_username",
     ),
 }
 

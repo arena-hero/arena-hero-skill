@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision f293a63d95865b9661ec7fd860e15e6e6a691520: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision 92cde5df38c1c7791559582e68ee49aa1cd4fad0: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -112,6 +112,14 @@ components:
       description: Canonical lowercase hyphenated UUID.
       examples:
         - 9d3e4941-2816-4a39-a220-df8cd95e877d
+    Username:
+      type: string
+      minLength: 3
+      maxLength: 24
+      pattern: '^[a-z0-9_]+$'
+      description: Public Core owner username without the leading @ display prefix.
+      examples:
+        - arena_hero
     Position:
       type: array
       prefixItems:
@@ -288,12 +296,14 @@ components:
     NormalCoreObject:
       type: object
       additionalProperties: false
-      required: [kind, id, controlled, position, hp, shield, state]
+      required: [kind, id, owner_username, controlled, position, hp, shield, state]
       properties:
         kind:
           const: CORE
         id:
           $ref: '#/components/schemas/UUID'
+        owner_username:
+          $ref: '#/components/schemas/Username'
         controlled:
           type: boolean
         position:
@@ -312,6 +322,7 @@ components:
       required:
         - kind
         - id
+        - owner_username
         - controlled
         - position
         - hp
@@ -326,6 +337,8 @@ components:
           const: CORE
         id:
           $ref: '#/components/schemas/UUID'
+        owner_username:
+          $ref: '#/components/schemas/Username'
         controlled:
           type: boolean
         position:

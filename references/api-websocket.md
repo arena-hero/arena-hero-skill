@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/api/websocket.md`.
+> Bundled from `arena-hero-doc` revision `92cde5df38c1c7791559582e68ee49aa1cd4fad0`: `docs/api/websocket.md`.
 
 # WebSocket
 
@@ -90,6 +90,7 @@ player's view.
         "kind": "CORE",
         "id": "2ea3c3dc-42b0-4b92-9754-7558bd4ff834",
         "controlled": true,
+        "owner_username": "arena_hero",
         "position": [12, 8],
         "hp": 5,
         "shield": 5,

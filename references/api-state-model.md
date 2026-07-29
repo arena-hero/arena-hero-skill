@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/api/state-model.md`.
+> Bundled from `arena-hero-doc` revision `92cde5df38c1c7791559582e68ee49aa1cd4fad0`: `docs/api/state-model.md`.
 
 # State model
 
@@ -22,7 +22,8 @@ replaces the one before it.
 |---|---|
 | A new message arrives | Replace the previous `PlayerState`. Do not merge arrays. |
 | You read an object | Check `kind` first, then read the fields listed for that kind. |
-| You need its owner | `controlled: true` means yours; `false` means a visible enemy. |
+| You need a Core owner | Read `owner_username` and add `@` only when displaying it. |
+| You need a Unit owner | `controlled: true` means yours; `false` means a visible enemy. Unit owner identity stays private. |
 | A field is missing | Its value is unknown or does not apply. The server does not send `null`. |
 
 ```json title="Minimal state message"
@@ -40,6 +41,7 @@ replaces the one before it.
         "kind": "CORE",
         "id": "2ea3c3dc-42b0-4b92-9754-7558bd4ff834",
         "controlled": true,
+        "owner_username": "arena_hero",
         "position": [12, 8],
         "hp": 5,
         "shield": 5,
@@ -172,6 +174,7 @@ may later create a natural replacement elsewhere in the chunk.
   "kind": "CORE",
   "id": "2ea3c3dc-42b0-4b92-9754-7558bd4ff834",
   "controlled": true,
+  "owner_username": "arena_hero",
   "position": [12, 8],
   "hp": 5,
   "shield": 4,
@@ -184,6 +187,7 @@ may later create a natural replacement elsewhere in the chunk.
   "kind": "CORE",
   "id": "2ea3c3dc-42b0-4b92-9754-7558bd4ff834",
   "controlled": true,
+  "owner_username": "arena_hero",
   "position": [12, 8],
   "hp": 5,
   "shield": 4,
@@ -200,6 +204,7 @@ may later create a natural replacement elsewhere in the chunk.
 | `kind` | `"CORE"` | Yes |
 | `id` | UUID | Yes |
 | `controlled` | boolean | Yes |
+| `owner_username` | 3–24 lowercase letters, digits, or underscores | Yes |
 | `position` | `[x, y]` | Yes; remains the origin while moving |
 | `hp` | integer ≥ 0 | Yes |
 | `shield` | integer ≥ 0 | Yes |
@@ -209,8 +214,9 @@ may later create a natural replacement elsewhere in the chunk.
 | `move_required_ticks` | integer ≥ 1 | Moving only; currently `4` |
 | `destination` | `[x, y]` | Moving only |
 
-A normal Core has none of the movement fields. A visible enemy Core exposes the
-same ones you would see on your own.
+A normal Core has none of the movement fields. Every Core includes its owner's
+public username without a leading `@`; display it as `@owner_username`. A visible
+enemy Core exposes the same Core fields you would see on your own.
 
 ### Unit
 
@@ -244,7 +250,8 @@ An enemy Worker's cargo is hidden from you. Vanguards and Rangers never carry a
 | Data | Included when | Hidden fields |
 |---|---|---|
 | Owned Core and Units | Always | None from their object format |
-| Enemy Core and Units | Their cell is currently visible | Owner identity; enemy Worker cargo |
+| Enemy Core | Its cell is currently visible | Internal owner ID and account details other than `owner_username` |
+| Enemy Units | Their cell is currently visible | Owner identity; enemy Worker cargo |
 | Obstacles and resource points | Their cells are currently visible | Resource quantity |
 | Beacon position | Always | None |
 | Beacon status and carrier | Beacon cell is currently visible | Both fields outside vision |

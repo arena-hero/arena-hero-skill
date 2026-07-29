@@ -198,6 +198,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "Champion Beacon",
             "### Terrain",
             "`RESOURCE` positions are current",
+            "owner_username",
         },
         "api-resolution-results.md": {
             "# Resolution results",
@@ -284,6 +285,9 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert {"TickMessage", "StateMessage", "ReceivedMessage"} <= set(messages)
     schemas = asyncapi["components"]["schemas"]
     assert "cargo piles" in schemas["TerrainBatch"]["description"]
+    assert "owner_username" in schemas["NormalCoreObject"]["required"]
+    assert "owner_username" in schemas["MovingCoreObject"]["required"]
+    assert schemas["Username"]["pattern"] == "^[a-z0-9_]+$"
     assert "RESOURCE_REFILLED" not in schemas["EventType"]["enum"]
     assert "UNIT_SELF_DESTRUCTED" in schemas["EventType"]["enum"]
     assert "WORKER_CARGO_DROPPED" in schemas["EventType"]["enum"]

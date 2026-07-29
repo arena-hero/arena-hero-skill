@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/api/errors.md`.
+> Bundled from `arena-hero-doc` revision `92cde5df38c1c7791559582e68ee49aa1cd4fad0`: `docs/api/errors.md`.
 
 # Errors and recovery
 

@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `9cc5a2054d2375d80a83c67d6da12df3bb2bb149`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `906da720fecb12fa6f224163aa3ad384bc399927`: `docs/api-reference.md`.
 
 # API reference
 
@@ -297,6 +297,7 @@ The `Core` controller exposes:
 | `position` | `Position` |
 | `hp` | `int` |
 | `shield` | `int` |
+| `owner_username` | `str` |
 | `spawn(unit_type)` | Spawn `WORKER`, `VANGUARD`, or `RANGER`. |
 | `repair_shield()` | Spend one resource to repair one shield. |
 | `start_move(direction)` | Start moving the Core. |
@@ -346,6 +347,7 @@ For field semantics and visibility rules, see the
 | `kind` | `Literal["CORE"]` | Object discriminator. |
 | `id` | `UUID` | Stable Core identifier. |
 | `controlled` | `bool` | Whether this player controls the Core. |
+| `owner_username` | `str` | Public username of the Core owner, without the leading `@`. |
 | `position` | `Position` | Current visible cell. |
 | `hp` | `int` | Current hit points. |
 | `shield` | `int` | Current shield. |
