@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/api/state-model.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/api/state-model.md`.
 
 # State model
 
@@ -160,8 +160,10 @@ altogether, none of its positions are currently visible. These batches carry no
 `id`, no `controlled`, no HP, and no resource quantity.
 
 `OBSTACLE` positions are permanent terrain. `RESOURCE` positions are current
-availability, not permanent terrain memory: one successful harvest consumes a
-point, and replenishment may later create a replacement elsewhere in the chunk.
+availability, not permanent terrain memory. They may be natural points or cargo
+piles left by dead Workers. One successful harvest consumes a natural point;
+a partially recovered cargo pile keeps the same position present. Replenishment
+may later create a natural replacement elsewhere in the chunk.
 
 ### Core
 

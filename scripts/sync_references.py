@@ -43,18 +43,36 @@ LINK_ALIASES = {
     "/asyncapi.yaml": "asyncapi.yaml",
 }
 
-DOC_RESOURCE_CONTRACT: Mapping[str, tuple[str, ...]] = {
-    "docs/api/commands.md": ("RESOURCE_DEPLETED",),
-    "docs/api/resolution-results.md": ("RESOURCE_DEPLETED",),
-    "docs/api/state-model.md": ("currently available resource",),
-    "docs/reference/numbers.md": ("axis(c)",),
-    "static/openapi.yaml": ("RESOURCE_DEPLETED",),
-    "static/asyncapi.yaml": ("RESOURCE_DEPLETED",),
+DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
+    "docs/api/commands.md": (
+        "RESOURCE_DEPLETED",
+        "SELF_DESTRUCT",
+        "WORKER_CARGO_DROPPED",
+    ),
+    "docs/api/resolution-results.md": (
+        "RESOURCE_DEPLETED",
+        "UNIT_SELF_DESTRUCTED",
+        "WORKER_CARGO_DROPPED",
+        "DROPPED_CARGO",
+    ),
+    "docs/api/state-model.md": ("dead Workers",),
+    "docs/reference/numbers.md": ("axis(c)", "Cargo piles"),
+    "docs/reference/source-and-version.md": ("Gameplay rules | v0.4",),
+    "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
+    "static/asyncapi.yaml": (
+        "RESOURCE_DEPLETED",
+        "SELF_DESTRUCT",
+        "WORKER_CARGO_DROPPED",
+    ),
 }
 
-SDK_RESOURCE_CONTRACT: Mapping[str, tuple[str, ...]] = {
-    "docs/quickstart.md": ("RESOURCE_DEPLETED",),
-    "docs/api-reference.md": ("RESOURCE_DEPLETED",),
+SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
+    "docs/quickstart.md": ("RESOURCE_DEPLETED", "cargo piles left by dead Workers"),
+    "docs/api-reference.md": (
+        "RESOURCE_DEPLETED",
+        "SelfDestructAction",
+        "WORKER_CARGO_DROPPED",
+    ),
 }
 
 FRONTMATTER = re.compile(r"\A---\n.*?\n---\n+", re.DOTALL)
@@ -84,7 +102,7 @@ def git_head(repo: Path) -> str:
     raise RuntimeError(f"Could not resolve {ref} in {repo}")
 
 
-def require_resource_contract(
+def require_contract(
     repo: Path,
     repo_name: str,
     requirements: Mapping[str, tuple[str, ...]],
@@ -102,7 +120,7 @@ def require_resource_contract(
     if missing:
         details = ", ".join(missing)
         raise RuntimeError(
-            f"{repo_name} does not contain the current finite-resource "
+            f"{repo_name} does not contain the current game "
             f"contract; refusing to overwrite bundled references: {details}"
         )
 
@@ -151,7 +169,7 @@ def write_markdown_bundle(
         header = (
             "<!-- Generated from contract-aligned upstream sources by "
             "scripts/sync_references.py. -->\n\n"
-            f"> Bundled from `{repo_name}` commit `{source_commit}`: `{source}`.\n\n"
+            f"> Bundled from `{repo_name}` revision `{source_commit}`: `{source}`.\n\n"
         )
         (REFERENCES / target).write_text(header + content)
 
@@ -191,7 +209,7 @@ def write_schema_bundle(
         header = (
             "# Generated from contract-aligned upstream sources by "
             "scripts/sync_references.py.\n"
-            f"# Bundled from arena-hero-doc commit {docs_commit}: {source}.\n"
+            f"# Bundled from arena-hero-doc revision {docs_commit}: {source}.\n"
         )
         content = (docs_repo / source).read_text()
         (REFERENCES / target).write_text(header + content)
@@ -214,6 +232,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="refresh docs and schemas without replacing the bundled SDK references",
     )
+    parser.add_argument(
+        "--revision-suffix",
+        default="",
+        help="append a source-revision label such as +working-tree",
+    )
     return parser.parse_args()
 
 
@@ -221,12 +244,12 @@ def main() -> None:
     args = parse_args()
     docs_repo = args.docs_repo.resolve()
     sdk_repo = args.sdk_repo.resolve()
-    require_resource_contract(
+    require_contract(
         docs_repo,
         "arena-hero-doc",
-        DOC_RESOURCE_CONTRACT,
+        DOC_GAME_CONTRACT,
     )
-    docs_commit = git_head(docs_repo)
+    docs_commit = git_head(docs_repo) + args.revision_suffix
     link_targets = {**DOC_FILES, **SCHEMA_FILES, **LINK_ALIASES}
 
     REFERENCES.mkdir(exist_ok=True)
@@ -238,12 +261,12 @@ def main() -> None:
         link_targets,
     )
     if not args.skip_sdk:
-        require_resource_contract(
+        require_contract(
             sdk_repo,
             "arena-hero-python",
-            SDK_RESOURCE_CONTRACT,
+            SDK_GAME_CONTRACT,
         )
-        sdk_commit = git_head(sdk_repo)
+        sdk_commit = git_head(sdk_repo) + args.revision_suffix
         write_markdown_bundle(
             sdk_repo,
             "arena-hero-python",

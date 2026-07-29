@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/reference/glossary.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/reference/glossary.md`.
 
 # Glossary
 
@@ -19,6 +19,11 @@ out of date.
 
 The one indestructible global objective. Its coordinate is public at all times,
 and a carrier you can see grants shield-cap and Worker-harvest bonuses.
+
+**Cargo pile**
+
+Resources left on a Worker's final cell when it dies. The amount persists
+independently from the chunk's natural-resource quota until Workers recover it.
 
 **Command gate**
 

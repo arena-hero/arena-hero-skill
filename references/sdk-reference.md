@@ -1,6 +1,6 @@
-<!-- Bundled upstream and aligned to the current finite-resource contract. -->
+<!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` commit `8d06cbb93226335d7f605776fb1a8b40460d95b4`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `9cc5a2054d2375d80a83c67d6da12df3bb2bb149`: `docs/api-reference.md`.
 
 # API reference
 
@@ -164,7 +164,7 @@ difference is that `AsyncTurn.submit()` must be awaited.
 | `rangers` | `tuple[Ranger, ...]` | Controlled Rangers. |
 | `visible_enemies` | `tuple[UnitView | CoreView, ...]` | Visible enemy objects. |
 | `terrain` | `tuple[TerrainView, ...]` | Visible resource and obstacle batches. |
-| `resource_cells` | `frozenset[Position]` | Resource nodes visible in this Turn only. |
+| `resource_cells` | `frozenset[Position]` | Visible natural-resource and dropped-cargo cells. |
 | `obstacle_cells` | `frozenset[Position]` | Visible obstacle cells. |
 | `beacon` | `ChampionBeacon` | Visibility-limited Beacon view. |
 | `events` | `tuple[ResolutionEvent, ...]` | Private results from the previous Tick. |
@@ -172,9 +172,11 @@ difference is that `AsyncTurn.submit()` must be awaited.
 
 `Position` is `tuple[int, int]` in `(x, y)` order.
 
-`resource_cells` is not permanent terrain memory. A successful harvest removes
-one node, and deterministic refill after every fourth Tick can add nodes at new
-positions. Rebuild resource targeting from every Turn.
+`resource_cells` contains visible natural points and Worker cargo piles, but not
+pile amounts. One successful harvest consumes a natural point; a partially
+recovered pile remains. Every fourth resolved Tick replenishes only missing
+natural chunk slots. Same-cell losers receive `HARVEST_FAILED` with
+`RESOURCE_DEPLETED`.
 
 ### Methods
 
@@ -229,6 +231,7 @@ All controlled Unit objects expose:
 | `move(direction)` | Queue a one-cell move. |
 | `pickup_beacon()` | Pick up the Beacon on the current cell. |
 | `drop_beacon()` | Drop a carried Beacon. |
+| `self_destruct()` | Remove this Unit before upkeep. Worker cargo drops on the final cell; there is no refund or area damage. |
 | `wait()` | Queue an explicit `WAIT`. |
 | `clear_action()` | Remove this Unit from the queued plan. |
 
@@ -247,8 +250,12 @@ Extra controls:
 
 | Method | Meaning |
 |---|---|
-| `harvest()` | Attempt to consume the current node; the lowest eligible same-cell Worker UUID wins. |
+| `harvest()` | Harvest the resource on the current cell. |
 | `deposit()` | Deposit cargo while sharing a cell with the Core. |
+
+Any Worker death leaves its complete cargo amount as a recoverable resource pile
+on the final cell. For those events, use `event.resource_amount`; a successful
+recovery has `event.harvest_source is HarvestSource.DROPPED_CARGO`.
 
 ### Vanguard
 
@@ -355,10 +362,7 @@ Movement fields are either all present for `MOVING` or all absent for `NORMAL`.
 | Field | Type | Meaning |
 |---|---|---|
 | `kind` | `Literal["OBSTACLE", "RESOURCE"]` | Terrain type. |
-| `positions` | `tuple[Position, ...]` | Cells of this kind visible in the current Turn. |
-
-Obstacle positions are permanent. `RESOURCE` positions are dynamic and may be
-removed by harvest or added by the four-Tick refill.
+| `positions` | `tuple[Position, ...]` | Visible cells in this batch. |
 
 ### `ChampionBeacon`
 
@@ -380,11 +384,19 @@ removed by harvest or added by the four-Tick refill.
 | `target_id` | `UUID | None` |
 | `position` | `Position | None` |
 | `values` | `dict[str, Any] | None` |
+| `resource_amount` | `int | None` |
+| `harvest_source` | `HarvestSource | None` |
 
 Event names and reason codes remain strings so newer server values do not break
 an older SDK. See
 [resolution results](https://doc.arenahero.io/api/resolution-results) for their
 meanings.
+
+`resource_amount` safely reads the positive `amount` from
+`WORKER_CARGO_DROPPED` and `HARVEST_SUCCEEDED`. `harvest_source` returns
+`HarvestSource.RESOURCE_NODE` or `HarvestSource.DROPPED_CARGO` for a successful
+harvest. Both properties return `None` when the event or a future value does not
+match.
 
 ### `Tick`
 
@@ -457,6 +469,7 @@ does not merge it with an earlier plan.
 | `ShootAction` | `target_id`, `expected_cell` |
 | `PickupBeaconAction` | none |
 | `DropBeaconAction` | none |
+| `SelfDestructAction` | none |
 
 ### Core actions
 
@@ -480,6 +493,7 @@ does not merge it with an earlier plan.
 | `CoreState` | `NORMAL`, `MOVING` |
 | `CommandSource` | `AGENT`, `MANUAL` |
 | `BeaconStatus` | `GROUND`, `CARRIED` |
+| `HarvestSource` | `RESOURCE_NODE`, `DROPPED_CARGO` |
 
 `Direction.delta` returns the corresponding `(dx, dy)` tuple.
 
@@ -510,11 +524,6 @@ error.details
 Gameplay failures are not Python exceptions. They arrive in the next
 `Turn.events` as `ResolutionEvent` values.
 
-For Worker contention, losing eligible harvesters receive a
-`HARVEST_FAILED` event whose `reason_code` is `RESOURCE_DEPLETED`. The SDK keeps
-event types and reasons as strings, so this rule requires no new Python enum or
-exception.
-
 ## Connection behavior
 
 The SDK:
@@ -540,4 +549,4 @@ For timing, replacement, receipts, and reconnect rules, read
 
 The `arena_hero` package exports the following public names from its top-level module:
 
-`APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`.
+`APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`.

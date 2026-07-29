@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/agent/command-loop.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/agent/command-loop.md`.
 
 # Reliable command loop
 
@@ -22,8 +22,9 @@ resource_observation_memory
 The connection will drop sooner or later. Holding the latest state and the latest
 receipts on your side means that when it comes back you can swap them out
 cleanly, rather than trying to work out what you missed. Keep obstacles and
-resource observations separate: obstacles are permanent, while a resource point
-may be consumed or replenished while its cell is outside vision.
+resource observations separate: obstacles are permanent, while a natural point
+or cargo pile may be consumed, partially recovered, or replenished while its
+cell is outside vision.
 
 ## State machine
 

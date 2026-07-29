@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -9,11 +9,11 @@
 | Item | Value |
 |---|---|
 | HTTP and WebSocket API | v0.1 |
-| Gameplay rules | v0.2 |
+| Gameplay rules | v0.4 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `c6553156d8e4512fd6010a10b6500741f023c9da` |
-| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.1.0 |
-| Reviewed SDK commit | `8d06cbb93226335d7f605776fb1a8b40460d95b4` |
+| Reviewed server commit | `f98e22e74486d3d51a30fd38a708da1716b3b454` |
+| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.0 |
+| Reviewed SDK commit | `9cc5a2054d2375d80a83c67d6da12df3bb2bb149` |
 | Server review date | 29 July 2026 |
 | SDK review date | 29 July 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
@@ -43,7 +43,7 @@ explicit contract-version decision:
 - WebSocket message types and the reconnect snapshot;
 - the fog-of-war privacy boundary;
 - the map generator contract;
-- the finite-resource quota, consumption, refresh, and contention rules;
+- the finite-resource quota, cargo-drop, consumption, refresh, and contention rules;
 - core balance rules that determine replayed outcomes.
 
 Everything else — copy, layout, diagrams, examples, the order things are explained
@@ -51,7 +51,7 @@ in — can improve freely, because none of it changes the game contract.
 
 ## Why there is no version picker yet
 
-The public API remains v0.1 and the current gameplay rules are v0.2, so this site
+The public API remains v0.1 and the current gameplay rules are v0.4, so this site
 publishes exactly one current version in English and Simplified Chinese. Once
 there is a first stable compatibility release, older contracts can be kept
 around as Docusaurus versions.

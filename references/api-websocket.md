@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/api/websocket.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/api/websocket.md`.
 
 # WebSocket
 
@@ -118,7 +118,7 @@ When `state` arrives:
 4. POST it before the current window closes.
 
 Everything you own is in there. Enemy entities, obstacles, and currently
-available resource points appear only while they are visible. Resource
+available natural points or cargo piles appear only while they are visible. Resource
 observations can become stale outside vision. For every field, see the
 [State model](api-state-model.md); for `events`, see
 [Resolution results](api-resolution-results.md).

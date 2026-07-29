@@ -1,6 +1,6 @@
-<!-- Bundled upstream and aligned to the current finite-resource contract. -->
+<!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` commit `8d06cbb93226335d7f605776fb1a8b40460d95b4`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `9cc5a2054d2375d80a83c67d6da12df3bb2bb149`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -27,7 +27,7 @@ Use `ArenaHeroClient` in a normal Python program:
 ```python
 from getpass import getpass
 
-from arena_hero import ArenaHeroClient
+from arena_hero import ArenaHeroClient, Direction
 
 
 api_key = getpass("Arena Hero API key: ")
@@ -35,10 +35,10 @@ api_key = getpass("Arena Hero API key: ")
 with ArenaHeroClient(api_key=api_key) as game:
     for turn in game.turns():
         for worker in turn.workers:
-            if worker.cargo == 0 and worker.position in turn.resource_cells:
+            if worker.position in turn.resource_cells:
                 worker.harvest()
             else:
-                worker.wait()
+                worker.move(Direction.RIGHT)
 
         turn.submit()
 ```
@@ -133,13 +133,27 @@ Use the filtered collections when possible:
   checks.
 - `turn.events` contains private resolution results from the previous Tick.
 
-`turn.core` is `None` while your player is respawning.
-
-`turn.resource_cells` contains only resource nodes visible in this Turn. A
-successful harvest removes one node, and the four-Tick refill may create nodes
-at different positions. Never retain this set as permanent terrain. Recompute
-resource targets from each Turn and from `HARVEST_FAILED` events, especially
+Treat `turn.resource_cells` as current visible availability, not permanent map
+data. It includes natural points and cargo piles left by dead Workers, but not
+pile amounts. A successful harvest consumes a natural point; a partially
+recovered pile remains. Every fourth resolved Tick fills only missing natural
+slots back to each chunk's quota. When multiple eligible Workers contest one
+cell, only the lowest UUID succeeds and the others receive `HARVEST_FAILED` with
 `RESOURCE_DEPLETED`.
+
+Cargo-drop events have typed helpers:
+
+```python
+from arena_hero import HarvestSource
+
+for event in turn.events:
+    if event.event_type == "WORKER_CARGO_DROPPED":
+        print("dropped", event.resource_amount, "at", event.position)
+    elif event.harvest_source is HarvestSource.DROPPED_CARGO:
+        print("recovered", event.resource_amount, "at", event.position)
+```
+
+`turn.core` is `None` while your player is respawning.
 
 ## Control every object
 
@@ -148,10 +162,10 @@ from arena_hero import Direction, UnitType
 
 
 for worker in turn.workers:
-    if worker.cargo == 0 and worker.position in turn.resource_cells:
-        worker.harvest()
+    if worker.cargo:
+        worker.move(Direction.LEFT)
     else:
-        worker.wait()
+        worker.harvest()
 
 for vanguard in turn.vanguards:
     vanguard.sweep(Direction.UP)
@@ -217,9 +231,6 @@ The asynchronous constructor accepts the same arguments.
   running.
 - Treat each Turn as a complete replacement, not a patch over an older state.
 - Read `turn.events` to learn what happened to the previous commands.
-- Treat `turn.resource_cells` as current visible nodes, not permanent map data.
-  Recompute after a node disappears or a harvest returns
-  `RESOURCE_DEPLETED`.
 - Do not retain Unit or Core controller objects across Turns.
 - Let the SDK safely reconnect transient WebSocket failures.
 - Stop and fix credentials or policy violations when the SDK raises a terminal

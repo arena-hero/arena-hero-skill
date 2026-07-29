@@ -86,8 +86,9 @@ Before writing a tactic or submitting a plan:
 5. Verify every rule-dependent decision against the bundled rules. Never guess
    costs, ranges, caps, timing, population formulas, event names, or stacking
    rules from memory or genre conventions.
-6. Treat `turn.resource_cells` as current visible nodes, not permanent terrain.
-   Recompute after a node disappears, after
+6. Treat `turn.resource_cells` as current visible natural nodes or Worker cargo
+   piles, not permanent terrain. Pile amounts are not exposed. Recompute after
+   a position disappears, after
    `HARVEST_FAILED/RESOURCE_DEPLETED`, and whenever current visibility
    contradicts an old resource target.
 
@@ -104,7 +105,8 @@ Read [references/direct-play.md](references/direct-play.md) before direct play.
 4. Separate tactic decisions from connection setup so decisions can be tested
    without a live credential.
 5. Handle missing Core state while respawning, visible terrain only, dynamic
-   resource nodes, current Unit capabilities, and prior resolution events.
+   resource nodes and cargo piles, current Unit capabilities, and prior
+   resolution events.
 6. Submit one complete plan promptly after each Turn. Prefer a simpler valid
    plan over missing the command window.
 7. Validate syntax, imports, representative state decisions, and secret absence

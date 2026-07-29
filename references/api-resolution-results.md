@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -22,6 +22,7 @@ Start from `event_type`, then read the fields listed for that event:
 
 | Looking for | Go to |
 |---|---|
+| Unit self-destruction | [Unit lifecycle events](#unit-lifecycle-events) |
 | Upkeep, Core damage, repair, or spawning | [Economy and Core events](#economy-and-core-events) |
 | Harvesting or depositing | [Worker events](#worker-events) |
 | Sweeps, shots, and damage | [Combat events](#combat-events) |
@@ -42,6 +43,17 @@ Start from `event_type`, then read the fields listed for that event:
 | `values` | Event-specific object. Keys are stable per event row; the object is omitted when no values apply. |
 
 Optional fields that do not apply are left out rather than sent as `null`.
+
+## Unit lifecycle events
+
+| `event_type` | `reason_code` | IDs and position | `values` | Meaning |
+|---|---|---|---|---|
+| `UNIT_SELF_DESTRUCTED` | absent | `actor_id`: removed Unit; `position`: its final cell | absent | The owner deliberately removed the Unit before upkeep. |
+| `WORKER_CARGO_DROPPED` | absent | `actor_id`: dead Worker; `position`: its final cell | `{amount: int}` | The Worker's complete cargo amount was added to the resource pile on this cell. |
+
+Self-destruction also increments the owner's `units_lost`. It creates no attack
+damage or destruction participation. A Beacon carrier additionally receives
+`BEACON_DROPPED_ON_DEATH`.
 
 ## Economy and Core events
 
@@ -72,7 +84,7 @@ it for an attack, and only when at least one participant can be named.
 | `HARVEST_FAILED` | `NOT_RESOURCE_CELL` | `actor_id`: Worker; `position`: Worker cell | absent | Current terrain is not a resource cell. |
 | `HARVEST_FAILED` | `CARGO_FULL` | `actor_id`: Worker; `position`: Worker cell | absent | Worker already carries resources. |
 | `HARVEST_FAILED` | `RESOURCE_DEPLETED` | `actor_id`: Worker; `position`: consumed point | absent | Another eligible empty Worker with a lower UUID won this same point in the Tick. |
-| `HARVEST_SUCCEEDED` | absent | `actor_id`: Worker; `position`: consumed point | `{amount: int}` | One point was consumed and 1 resource, or 2 with the Beacon, was loaded into Worker cargo. |
+| `HARVEST_SUCCEEDED` | absent | `actor_id`: Worker; `position`: resource cell | `{amount: int, source: "RESOURCE_NODE" or "DROPPED_CARGO"}` | Cargo was loaded from a natural point or recovered from a Worker cargo pile. |
 | `BEACON_HARVEST_BONUS` | absent | `actor_id`: Worker; `position`: Worker cell | `{amount: int}` | Bonus portion of the harvest granted by carrying the Beacon. |
 
 For every resource position, all eligible empty Workers are ordered by UUID raw
@@ -80,6 +92,9 @@ bytes. Only the lowest UUID succeeds and consumes the point. All other contender
 receive `RESOURCE_DEPLETED`, even if their player holds the Beacon. Replenishment
 does not create player events; later complete states expose newly available
 points only when they are visible.
+
+Recovering `DROPPED_CARGO` never takes more than the pile contains and does not
+increment `resources_harvested` or `beacon_bonus_resources_harvested`.
 
 ## Combat events
 

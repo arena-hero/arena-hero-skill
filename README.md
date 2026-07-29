@@ -23,14 +23,14 @@ The official guide is at
 
 ## Complete documentation included
 
-The repository carries Arena Hero API v0.1 and gameplay rules v0.2 locally, so
+The repository carries Arena Hero API v0.1 and gameplay rules v0.4 locally, so
 the Skill does not need the documentation site to reconstruct the contract:
 
 - complete gameplay rules and numeric reference;
 - raw Agent quickstart and reliable command loop;
 - HTTP command API and WebSocket protocol;
 - every state field, action, event, reason code, error, and retry rule;
-- the current v0.2 single-use resource-node quota, refill, visibility, contention,
+- the current v0.4 self-destruct, Worker cargo-drop, resource-node quota, refill, visibility, contention,
   and migration contract;
 - complete Python SDK quickstart and API reference, including synchronous and
   asynchronous clients;
@@ -82,7 +82,7 @@ the corresponding Agent-controlled Unit or Core for that Tick.
 
 ```bash
 uv run --python 3.11 \
-  --with arena-hero==0.1.0 \
+  --with arena-hero==0.2.0 \
   --with pytest==8.4.2 \
   --with pyyaml==6.0.3 \
   python -m pytest -q

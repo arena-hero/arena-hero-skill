@@ -11,9 +11,9 @@ import pytest
 import yaml
 
 from scripts.sync_references import (
-    DOC_RESOURCE_CONTRACT,
-    SDK_RESOURCE_CONTRACT,
-    require_resource_contract,
+    DOC_GAME_CONTRACT,
+    SDK_GAME_CONTRACT,
+    require_contract,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -108,7 +108,9 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "frozen single-use resource-node quota" in normalized
+    assert "v0.4 self-destruct" in normalized
+    assert "Worker cargo-drop" in normalized
+    assert "resource-node quota" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
 
 
@@ -139,6 +141,10 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "RESOURCE_DEPLETED",
         "tier = floor(N / 20)",
         "upkeep = tier x (tier + 1) / 2",
+        "SELF_DESTRUCT",
+        "UNIT_SELF_DESTRUCTED",
+        "WORKER_CARGO_DROPPED",
+        "DROPPED_CARGO",
         "Worker | 2 | 3 | 5",
         "Vanguard | 4 | 4 | 10",
         "Ranger | 2 | 5 | 12",
@@ -162,7 +168,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "# Reliable command loop",
             "15-second window",
             "received",
-            "consumed or replenished",
+            "consumed, partially recovered, or replenished",
         },
         "api-overview.md": {
             "# API overview",
@@ -182,6 +188,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "## Plan body",
             "PICKUP_BEACON",
             "DROP_BEACON",
+            "SELF_DESTRUCT",
             "Idempotency-Key",
             "RESOURCE_DEPLETED",
         },
@@ -198,6 +205,9 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "SHOT_MISSED",
             "RESPAWN_DELAYED",
             "RESOURCE_DEPLETED",
+            "UNIT_SELF_DESTRUCTED",
+            "WORKER_CARGO_DROPPED",
+            "DROPPED_CARGO",
         },
         "api-errors.md": {
             "# Errors and recovery",
@@ -218,6 +228,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "TurnClosedError",
             "latest_receipts",
             "RESOURCE_DEPLETED",
+            "SelfDestructAction",
         },
         "reference-numbers.md": {
             "# Rules at a glance",
@@ -233,7 +244,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.2",
+            "Gameplay rules | v0.4",
             "Python SDK",
             "Reviewed server commit",
         },
@@ -260,15 +271,26 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
         "RESOURCE_DEPLETED"
         in openapi["components"]["schemas"]["HarvestAction"]["description"]
     )
+    assert (
+        openapi["components"]["schemas"]["SelfDestructAction"]["properties"]["type"][
+            "const"
+        ]
+        == "SELF_DESTRUCT"
+    )
 
     assert asyncapi["asyncapi"] == "3.1.0"
     assert asyncapi["channels"]["gameStream"]
     messages = asyncapi["components"]["messages"]
     assert {"TickMessage", "StateMessage", "ReceivedMessage"} <= set(messages)
     schemas = asyncapi["components"]["schemas"]
-    assert "disappear" in schemas["TerrainBatch"]["description"]
+    assert "cargo piles" in schemas["TerrainBatch"]["description"]
     assert "RESOURCE_REFILLED" not in schemas["EventType"]["enum"]
+    assert "UNIT_SELF_DESTRUCTED" in schemas["EventType"]["enum"]
+    assert "WORKER_CARGO_DROPPED" in schemas["EventType"]["enum"]
     assert "RESOURCE_DEPLETED" in schemas["HarvestAction"]["description"]
+    assert schemas["SelfDestructAction"]["properties"]["type"]["const"] == (
+        "SELF_DESTRUCT"
+    )
 
 
 def test_dynamic_resource_contract_is_consistent_across_bundle() -> None:
@@ -296,12 +318,18 @@ def test_dynamic_resource_contract_is_consistent_across_bundle() -> None:
         },
         "api-resolution-results.md": {
             "RESOURCE_DEPLETED",
+            "WORKER_CARGO_DROPPED",
+            "DROPPED_CARGO",
             "Replenishment does not create player events",
         },
-        "sdk-reference.md": {"resource_cells", "RESOURCE_DEPLETED"},
+        "sdk-reference.md": {
+            "resource_cells",
+            "RESOURCE_DEPLETED",
+            "WORKER_CARGO_DROPPED",
+        },
         "tactic-authoring.md": {
             "Recompute resource targets",
-            "current visible-node set",
+            "current visible-resource set",
         },
     }
     for filename, markers in required_markers.items():
@@ -322,24 +350,24 @@ def test_dynamic_resource_contract_is_consistent_across_bundle() -> None:
 @pytest.mark.parametrize(
     ("repo_name", "requirements"),
     [
-        ("arena-hero-doc", DOC_RESOURCE_CONTRACT),
-        ("arena-hero-python", SDK_RESOURCE_CONTRACT),
+        ("arena-hero-doc", DOC_GAME_CONTRACT),
+        ("arena-hero-python", SDK_GAME_CONTRACT),
     ],
 )
-def test_reference_sync_refuses_legacy_resource_sources(
+def test_reference_sync_refuses_stale_game_sources(
     tmp_path: Path,
     repo_name: str,
     requirements: Mapping[str, tuple[str, ...]],
 ) -> None:
-    with pytest.raises(RuntimeError, match="current finite-resource contract"):
-        require_resource_contract(tmp_path, repo_name, requirements)
+    with pytest.raises(RuntimeError, match="current game contract"):
+        require_contract(tmp_path, repo_name, requirements)
 
     for relative_path, markers in requirements.items():
         path = tmp_path / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(markers))
 
-    require_resource_contract(tmp_path, repo_name, requirements)
+    require_contract(tmp_path, repo_name, requirements)
 
 
 def test_bundled_reference_links_resolve_locally() -> None:

@@ -1,12 +1,12 @@
-# Arena Hero v0.2 game rules
+# Arena Hero v0.4 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
-This contract was reviewed against Arena Hero server commit
-[`c655315`](https://github.com/arena-hero/arena-hero/commit/c6553156d8e4512fd6010a10b6500741f023c9da)
-on 29 July 2026. If a live server reports newer or incompatible rules, stop
-rule-dependent play and update this bundle instead of mixing versions.
+This contract was reviewed against Arena Hero server revision
+`16b152ba63f5be4fcff2c347d8edddf5324d9558+working-tree` on 29 July 2026.
+If a live server reports newer or incompatible rules, stop rule-dependent play
+and update this bundle instead of mixing versions.
 
 This reference covers gameplay mechanics. Account registration, OAuth, private
 statistics, API-key management, and operator procedures are intentionally
@@ -99,6 +99,11 @@ duplicate, or accumulate above the quota. A successful harvest removes one node
 immediately during the Worker phase; refill happens only at the four-Tick
 boundary after all ordinary Tick resolution.
 
+Worker cargo dropped on death is a separate persistent pile on the Worker's
+final cell. Piles do not count toward the natural-node quota. A normal Worker
+recovers 1 resource per successful action; a Beacon Worker recovers up to 2,
+never more than the pile actually contains. Any remainder stays on the cell.
+
 Refill is deterministic pseudorandom selection using the permanent world seed,
 the resource-contract version, the refill Tick, chunk coordinates, and candidate
 coordinates. Candidate cells must:
@@ -156,22 +161,24 @@ concurrently, and pauses logical timers while offline.
 The following order is part of the rule contract:
 
 1. Lock the final valid Agent and Manual plans.
-2. Charge upkeep and apply unpaid-upkeep damage. A fleet destroyed here does
+2. Resolve every `SELF_DESTRUCT`, remove those Units, and drop any Worker cargo
+   on their final cells.
+3. Charge upkeep from the remaining population and apply unpaid-upkeep damage. A fleet destroyed here does
    not act later in the Tick.
-3. Resolve Unit movement and Core migrations reaching their fourth Tick.
-4. Validate new Core `START_MOVE` actions.
-5. Resolve Champion Beacon pickup and drop.
-6. Resolve Worker harvest and deposit.
-7. Resolve Core spawn and shield repair.
-8. Freeze one immutable combat snapshot and validate and accumulate all legal
+4. Resolve Unit movement and Core migrations reaching their fourth Tick.
+5. Validate new Core `START_MOVE` actions.
+6. Resolve Champion Beacon pickup and drop.
+7. Resolve Worker harvest and deposit.
+8. Resolve Core spawn and shield repair.
+9. Freeze one immutable combat snapshot and validate and accumulate all legal
    attacks.
-9. Apply damage simultaneously, remove destroyed objects, and process due
+10. Apply damage simultaneously, remove destroyed objects, and process due
    respawns.
-10. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
+11. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
     its current quota using the post-settlement world.
-11. Atomically commit the world, dynamic resources, results, journal, and new
+12. Atomically commit the world, dynamic resources, results, journal, and new
     clock.
-12. Announce the next Tick and publish fresh private states.
+13. Announce the next Tick and publish fresh private states.
 
 ### Atomicity, determinism, and recovery
 
@@ -279,7 +286,7 @@ A plan may specify at most one Core action:
 - It starts contributing to upkeep on the following Tick.
 - Worker deposits resolve before spawn and repair, so deposited resources may
   pay for either in the same Tick. They cannot retroactively pay upkeep already
-  charged at the start of the Tick.
+  charged after the self-destruct phase.
 
 ### Shield repair
 
@@ -343,8 +350,9 @@ upkeep = tier x (tier + 1) / 2
 | 80-99 | 4 | 10 |
 | 100-119 | 5 | 15 |
 
-Upkeep is automatic and uses no Core action. A newly spawned Unit starts paying
-on the next Tick; a Unit killed later in the Tick has already paid for this one.
+`SELF_DESTRUCT` resolves first. Upkeep is automatic, uses no Core action, and
+uses the remaining population. A newly spawned Unit starts paying on the next
+Tick; a Unit killed later in the Tick has already paid for this one.
 
 If resources cannot cover upkeep, inventory becomes zero and each missing
 resource deals 1 Core damage, shield first. If this destroys the Core, its fleet
@@ -361,7 +369,16 @@ one cardinal cell per Tick, and performs at most one action.
 | Vanguard | 4 | 4 | 10 | 1 damage to adjacent target cell |
 | Ranger | 2 | 5 | 12 | 1 damage at cardinal range 1-3 |
 
-Every Unit supports `MOVE`, `PICKUP_BEACON`, `DROP_BEACON`, and `WAIT`.
+Every Unit supports `MOVE`, `PICKUP_BEACON`, `DROP_BEACON`,
+`SELF_DESTRUCT`, and `WAIT`.
+
+### Self-destruct
+
+`{"type":"SELF_DESTRUCT"}` removes the Unit before upkeep and consumes its
+action for the Tick. It gives no production-cost refund, deals no area damage,
+and awards no destruction participation. Worker cargo drops on the final cell. A carried
+Beacon drops at the Unit's cell and cannot be picked up until the next Tick.
+The owner receives `UNIT_SELF_DESTRUCTED`, and `units_lost` increases by one.
 
 ### Worker
 
@@ -369,7 +386,12 @@ Worker-specific actions are `HARVEST` and `DEPOSIT`.
 
 - `HARVEST` requires an empty Worker on a `RESOURCE` cell.
 - It collects 1 resource, or 2 if the owner holds the Champion Beacon.
-- One successful harvest consumes the whole node, whether it grants 1 or 2.
+- Dropped Worker cargo is recovered before a natural node. Recovery never takes
+  more than the pile contains, and an unfinished pile remains on the cell.
+- A recovery emits `HARVEST_SUCCEEDED` with source `DROPPED_CARGO`; it does not
+  increment harvested-resource or Beacon-bonus statistics.
+- One successful natural harvest consumes the whole node, whether it grants 1
+  or 2.
 - When multiple eligible empty Workers harvest the same node in one Tick, only
   the lowest Worker UUID in ascending raw-byte order succeeds. Every other
   eligible contender receives `HARVEST_FAILED` with reason
@@ -383,7 +405,8 @@ Worker-specific actions are `HARVEST` and `DEPOSIT`.
 - A migrating Core or a Core recovering from migration cannot receive a
   deposit.
 - A failed deposit leaves cargo on the Worker.
-- Worker death destroys carried cargo.
+- Any Worker death adds its complete cargo amount to a persistent resource pile
+  on the final cell. The owner receives `WORKER_CARGO_DROPPED`.
 - Workers cannot attack.
 
 ### Vanguard
@@ -518,7 +541,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.2 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.4 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -546,6 +569,7 @@ When Core HP reaches zero:
 - the Core is removed;
 - all stored resources are lost;
 - every Unit belonging to that player is removed;
+- cargo carried by those Workers remains on each final cell;
 - locked actions for those objects no longer matter;
 - a carried Beacon drops under the Beacon rule;
 - the player enters `RESPAWNING`.

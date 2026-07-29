@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` commit `a9c2adc8a72cd1357b608bb34ecc63a0efffdcd9`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `f293a63d95865b9661ec7fd860e15e6e6a691520`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -61,6 +61,10 @@ resource_quota = max(2, floor(16 * 8 / (8 + ring)))
 One point yields 1 resource to a normal Worker or 2 to a Beacon player's Worker.
 Either harvest consumes exactly one point. A same-point tie goes to the lowest
 eligible Worker UUID.
+
+A dead Worker drops its complete cargo amount on its final cell. Recovery takes
+1 resource normally or up to 2 with the Beacon, never more than the pile holds.
+Cargo piles do not count toward the chunk's natural-resource quota.
 
 ```text
 population = Worker + Vanguard + Ranger
