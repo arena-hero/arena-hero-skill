@@ -94,4 +94,4 @@ direct-play bridge without using a live credential.
 
 ## License
 
-[MIT](LICENSE)
+[Apache License 2.0](LICENSE)
