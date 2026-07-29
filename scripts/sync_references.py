@@ -57,7 +57,11 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     ),
     "docs/api/state-model.md": ("dead Workers", "owner_username"),
     "docs/reference/numbers.md": ("axis(c)", "Cargo piles"),
-    "docs/reference/source-and-version.md": ("Gameplay rules | v0.4",),
+    "docs/reference/source-and-version.md": (
+        "Gameplay rules | v0.4",
+        "Python SDK",
+        "v0.2.2",
+    ),
     "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
         "RESOURCE_DEPLETED",

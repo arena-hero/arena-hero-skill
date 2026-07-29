@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 92cde5df38c1c7791559582e68ee49aa1cd4fad0: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision a12c9ae930d7fe3a53ad9ff9f3dfcff6c3369465: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API

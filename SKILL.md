@@ -94,6 +94,27 @@ Before writing a tactic or submitting a plan:
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 
+## Recover from SDK/protocol mismatches
+
+If the WebSocket appears to connect but stops before the first Turn, or the
+client raises `ProtocolError`, `invalid Arena Hero WebSocket message`, or a
+Pydantic missing/extra-field validation error, update the official SDK before
+diagnosing the endpoint, network, or API key. These symptoms commonly mean the
+backend state model is newer than the installed package.
+
+1. Read the installed version without printing credentials:
+   `python -c "import arena_hero; print(arena_hero.__version__)"`.
+2. When network access is available, compare it with the latest release on
+   PyPI.
+3. Upgrade through the project's existing package manager. For `pip`, run
+   `python -m pip install --upgrade --no-cache-dir arena-hero`.
+4. Restart the tactic or direct-play bridge and retry once.
+5. Only if the current PyPI release still fails, inspect the endpoint,
+   authentication, close code, and underlying exception.
+
+Do not work around a mismatch by weakening SDK validation, discarding unknown
+state fields, editing site-packages, or recreating the WebSocket parser.
+
 ## Tactic-script mode
 
 1. Use the user's stated goal. If none is given, ask once for the desired

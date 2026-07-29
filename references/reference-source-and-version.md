@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `92cde5df38c1c7791559582e68ee49aa1cd4fad0`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `a12c9ae930d7fe3a53ad9ff9f3dfcff6c3369465`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -12,8 +12,8 @@
 | Gameplay rules | v0.4 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
 | Reviewed server commit | `f98e22e74486d3d51a30fd38a708da1716b3b454` |
-| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.0 |
-| Reviewed SDK commit | `9cc5a2054d2375d80a83c67d6da12df3bb2bb149` |
+| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.2 |
+| Reviewed SDK commit | `d886848937e65a2c8b36b7507b008f9b0d112073` |
 | Server review date | 29 July 2026 |
 | SDK review date | 29 July 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |

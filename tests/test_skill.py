@@ -88,6 +88,24 @@ def test_api_key_sources_do_not_expose_the_value() -> None:
     assert "never\ndisplay it in chat or logs" in skill
 
 
+def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
+    skill = (ROOT / "SKILL.md").read_text()
+    assert "invalid Arena Hero WebSocket message" in skill
+    assert "missing/extra-field validation error" in skill
+    assert "update the official SDK before" in skill
+    assert "python -m pip install --upgrade --no-cache-dir arena-hero" in skill
+    assert "Do not work around a mismatch by weakening SDK validation" in skill
+
+    readme = (ROOT / "README.md").read_text()
+    tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
+    direct_play = (REFERENCES / "direct-play.md").read_text()
+    workflow = (ROOT / ".github/workflows/validate.yml").read_text()
+    assert "arena-hero==0.2.2" in readme
+    assert "arena-hero>=0.2.2,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.2,<0.3" in direct_play
+    assert workflow.count("arena-hero==0.2.2") == 2
+
+
 def test_agent_metadata_matches_skill() -> None:
     metadata = yaml.safe_load((ROOT / "agents/openai.yaml").read_text())
     interface = metadata["interface"]
@@ -247,6 +265,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "# Source and version policy",
             "Gameplay rules | v0.4",
             "Python SDK",
+            "v0.2.2",
             "Reviewed server commit",
         },
     }

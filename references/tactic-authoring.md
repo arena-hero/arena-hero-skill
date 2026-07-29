@@ -24,7 +24,7 @@ Add a compatible PyPI release through the project's existing dependency
 manager. For a standalone script:
 
 ```bash
-python -m pip install 'arena-hero>=0.2.0,<0.3'
+python -m pip install 'arena-hero>=0.2.2,<0.3'
 ```
 
 Do not install the SDK from a Git repository.
