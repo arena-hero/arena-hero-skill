@@ -100,10 +100,10 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
-    assert "arena-hero==0.2.3" in readme
-    assert "arena-hero>=0.2.3,<0.3" in tactic_authoring
-    assert "arena-hero>=0.2.3,<0.3" in direct_play
-    assert workflow.count("arena-hero==0.2.3") == 2
+    assert "arena-hero==0.2.4" in readme
+    assert "arena-hero>=0.2.4,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.4,<0.3" in direct_play
+    assert workflow.count("arena-hero==0.2.4") == 2
 
 
 def test_agent_metadata_matches_skill() -> None:
@@ -268,7 +268,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "# Source and version policy",
             "Gameplay rules | v0.6",
             "Python SDK",
-            "v0.2.3",
+            "v0.2.4",
             "Reviewed server commit",
         },
     }

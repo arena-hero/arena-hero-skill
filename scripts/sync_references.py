@@ -66,7 +66,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/reference/source-and-version.md": (
         "Gameplay rules | v0.6",
         "Python SDK",
-        "v0.2.3",
+        "v0.2.4",
     ),
     "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (

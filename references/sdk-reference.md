@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `9a931ce31402321e66564b392c467fdbaa92f5e9`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `08857e3a9c052521fdb840a98134737113e496de`: `docs/api-reference.md`.
 
 # API reference
 

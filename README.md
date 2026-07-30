@@ -83,7 +83,7 @@ the corresponding Agent-controlled Unit or Core for that Tick.
 
 ```bash
 uv run --python 3.11 \
-  --with arena-hero==0.2.3 \
+  --with arena-hero==0.2.4 \
   --with pytest==8.4.2 \
   --with pyyaml==6.0.3 \
   python -m pytest -q
