@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `777c64f1fb357c8c2a8940e5dc7c99b8358f098e`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `9a931ce31402321e66564b392c467fdbaa92f5e9`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -127,11 +127,11 @@ turn.events
 turn.plan
 ```
 
-Core storage accepts 5 resources per living Unit. A partial deposit leaves its
-remainder on the Worker; a full Core rejects the deposit
-without deleting cargo. If population falls, stored resources above the new
-capacity are destroyed immediately. Use `turn.resource_space` before choosing
-`deposit()`.
+Core storage has a minimum capacity of 10, then accepts 5 resources per living
+Unit. A partial deposit leaves its remainder on the Worker; a full Core rejects
+the deposit without deleting cargo. If population falls, stored resources above
+the new capacity are destroyed immediately. Use `turn.resource_space` before
+choosing `deposit()`.
 
 Use the filtered collections when possible:
 

@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `777c64f1fb357c8c2a8940e5dc7c99b8358f098e`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `9a931ce31402321e66564b392c467fdbaa92f5e9`: `docs/api-reference.md`.
 
 # API reference
 
@@ -157,7 +157,7 @@ difference is that `AsyncTurn.submit()` must be awaited.
 | `tick` | `int` | Tick this state and plan belong to. |
 | `state` | `PlayerState` | Complete authoritative player-state model. |
 | `resources` | `int` | Resources currently stored in the Core. |
-| `resource_capacity` | `int` | Current storage capacity: `state.population * 5`. |
+| `resource_capacity` | `int` | Current storage capacity: `max(10, state.population * 5)`. |
 | `resource_space` | `int` | Non-negative space available for another deposit. |
 | `core` | `Core | None` | Controlled Core, or `None` while respawning. |
 | `units` | `tuple[Unit, ...]` | All controlled Units. |
@@ -414,13 +414,15 @@ match.
 ```python
 from arena_hero import (
     CORE_RESOURCE_CAPACITY_PER_UNIT,
+    CORE_RESOURCE_MINIMUM_CAPACITY,
     core_resource_capacity,
 )
 ```
 
 `CORE_RESOURCE_CAPACITY_PER_UNIT` is `5`.
-`core_resource_capacity(population)` returns `population * 5` and rejects a
-negative population.
+`CORE_RESOURCE_MINIMUM_CAPACITY` is `10`.
+`core_resource_capacity(population)` returns
+`max(10, population * 5)` and rejects a negative population.
 
 ### `Tick`
 
@@ -573,4 +575,4 @@ For timing, replacement, receipts, and reconnect rules, read
 
 The `arena_hero` package exports the following public names from its top-level module:
 
-`CORE_RESOURCE_CAPACITY_PER_UNIT`, `APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`, `core_resource_capacity`.
+`CORE_RESOURCE_CAPACITY_PER_UNIT`, `CORE_RESOURCE_MINIMUM_CAPACITY`, `APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`, `core_resource_capacity`.

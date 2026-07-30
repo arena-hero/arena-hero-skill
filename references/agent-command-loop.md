@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/agent/command-loop.md`.
+> Bundled from `arena-hero-doc` revision `531bfe1b05cef5adea97ebcf29314a5e5fae58ad`: `docs/agent/command-loop.md`.
 
 # Reliable command loop
 

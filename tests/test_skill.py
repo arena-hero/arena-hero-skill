@@ -126,8 +126,8 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "v0.5 self-destruct" in normalized
-    assert "population × 5" in normalized
+    assert "v0.6 self-destruct" in normalized
+    assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
@@ -164,7 +164,7 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "UNIT_SELF_DESTRUCTED",
         "WORKER_CARGO_DROPPED",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
-        "resource_capacity = population x 5",
+        "resource_capacity = max(10, population x 5)",
         "DROPPED_CARGO",
         "Worker | 2 | 3 | 5",
         "Vanguard | 4 | 4 | 10",
@@ -266,7 +266,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.5",
+            "Gameplay rules | v0.6",
             "Python SDK",
             "v0.2.3",
             "Reviewed server commit",

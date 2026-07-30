@@ -23,15 +23,15 @@ The official guide is at
 
 ## Complete documentation included
 
-The repository carries Arena Hero API v0.1 and gameplay rules v0.5 locally, so
+The repository carries Arena Hero API v0.1 and gameplay rules v0.6 locally, so
 the Skill does not need the documentation site to reconstruct the contract:
 
 - complete gameplay rules and numeric reference;
 - raw Agent quickstart and reliable command loop;
 - HTTP command API and WebSocket protocol;
 - every state field, action, event, reason code, error, and retry rule;
-- the current v0.5 self-destruct, Worker cargo-drop, resource-node quota,
-  strict `population × 5` Core resource capacity, refill, visibility,
+- the current v0.6 self-destruct, Worker cargo-drop, resource-node quota,
+  strict `max(10, population × 5)` Core resource capacity, refill, visibility,
   contention, and migration contract;
 - complete Python SDK quickstart and API reference, including synchronous and
   asynchronous clients;

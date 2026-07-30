@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `531bfe1b05cef5adea97ebcf29314a5e5fae58ad`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -27,7 +27,7 @@
 | Vision | 5 |
 | Starting resources | 5 |
 | Starting Workers | 1 |
-| Resource capacity | `population × 5` |
+| Resource capacity | `max(10, population × 5)` |
 | Shield repair | 1 resource → 1 shield |
 
 ## Units
@@ -69,7 +69,7 @@ Cargo piles do not count toward the chunk's natural-resource quota.
 
 ```text
 population = Worker + Vanguard + Ranger
-resource_capacity = population × 5
+resource_capacity = max(10, population × 5)
 tier = floor(population / 20)
 upkeep = tier × (tier + 1) / 2
 ```

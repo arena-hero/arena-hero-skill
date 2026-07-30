@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/api/commands.md`.
+> Bundled from `arena-hero-doc` revision `531bfe1b05cef5adea97ebcf29314a5e5fae58ad`: `docs/api/commands.md`.
 
 # Command API
 
@@ -115,7 +115,7 @@ Only a Worker can do either of these.
   chunk deterministically fills only its missing slots back to its fixed quota.
 - `DEPOSIT` needs a Worker with cargo and its own Core on the same cell.
 - A Core cannot receive a deposit during a migration-restricted Tick.
-- Core capacity is `population × 5`. A partial deposit leaves the remainder on
+- Core capacity is `max(10, population × 5)`. A partial deposit leaves the remainder on
   the Worker.
 - A full Core returns `DEPOSIT_FAILED` with
   `CORE_RESOURCE_FULL`.

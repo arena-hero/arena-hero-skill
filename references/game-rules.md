@@ -1,10 +1,10 @@
-# Arena Hero v0.5 game rules
+# Arena Hero v0.6 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`bc16014cb039c34238bdef0f556219d6638ba4cc` on 30 July 2026.
+`f81b6c95db339e144226ca92514ad3d3c87721d9` on 30 July 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -125,9 +125,10 @@ vision in a later complete `state`.
 At a gameplay-contract migration boundary, keep the existing world, players,
 Cores, Units, Beacon, Tick, plans, events, and statistics. The finite-resource
 release replaces the legacy permanent resource layout in one atomic migration;
-old resource coordinates are not grandfathered. The v0.5 capacity release
-preserves the same state, then destroys Core inventory above the current
-population capacity during the first v0.5 resolution.
+old resource coordinates are not grandfathered. The v0.6 capacity release
+preserves the same state. It raises the minimum Core capacity to 10, so the
+upgrade itself cannot destroy inventory. Later population losses still destroy
+inventory above the resulting capacity during resolution.
 
 Coordinates are signed 64-bit integers represented as `[x, y]`.
 
@@ -263,18 +264,19 @@ Damage and unpaid-upkeep damage consume shield before HP.
 
 ### Resource storage
 
-Population counts living Units, not the Core. Each Unit provides 5 points of
-Core storage:
+Population counts living Units, not the Core. Core storage has a minimum
+capacity of 10. Above two Units, each living Unit provides 5 points of storage:
 
 ```text
-resource_capacity = population x 5
+resource_capacity = max(10, population x 5)
 ```
 
-The limit is strict. Whenever self-destruction or combat lowers population,
-stored resources above the new capacity are immediately destroyed. The owner
-receives `CORE_RESOURCE_OVERFLOW_DESTROYED` with
+The limit is strict. Zero, one, and two living Units all provide a capacity of
+10; three living Units provide 15. Whenever self-destruction or combat lowers
+population, stored resources above the new capacity are immediately destroyed.
+The owner receives `CORE_RESOURCE_OVERFLOW_DESTROYED` with
 `{amount: int, capacity: int}`. A new or respawned player starts with one Worker
-and 5 resources, exactly filling the initial capacity.
+and 5 resources, leaving 5 free capacity.
 
 A Worker deposits only what fits. Any remainder stays as Worker cargo. A full
 Core resolves the action as `DEPOSIT_FAILED` with `CORE_RESOURCE_FULL`; the
@@ -429,8 +431,8 @@ Worker-specific actions are `HARVEST` and `DEPOSIT`.
 - A migrating Core or a Core recovering from migration cannot receive a
   deposit.
 - A failed deposit leaves cargo on the Worker.
-- Core storage is capped at `population x 5`. `DEPOSIT` moves only what fits;
-  a full Core returns `CORE_RESOURCE_FULL`.
+- Core storage is capped at `max(10, population x 5)`. `DEPOSIT` moves only
+  what fits; a full Core returns `CORE_RESOURCE_FULL`.
 - Any Worker death adds its complete cargo amount to a persistent resource pile
   on the final cell. The owner receives `WORKER_CARGO_DROPPED`.
 - Workers cannot attack.
@@ -567,7 +569,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.5 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.6 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage

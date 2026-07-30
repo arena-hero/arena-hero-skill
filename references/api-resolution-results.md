@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `531bfe1b05cef5adea97ebcf29314a5e5fae58ad`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -81,7 +81,7 @@ it for an attack, and only when at least one participant can be named.
 | `DEPOSIT_FAILED` | `WORKER_EMPTY` | `actor_id`: Worker; `position`: Worker cell | absent | Worker has no cargo. |
 | `DEPOSIT_FAILED` | `CORE_NOT_PRESENT` | `actor_id`: Worker; `position`: Worker cell | absent | Owned Core is absent or not on the same cell. |
 | `DEPOSIT_FAILED` | `CORE_MOVING` | `actor_id`: Worker; `target_id`: Core; `position`: Worker cell | absent | The colocated Core is migration-restricted this Tick. |
-| `DEPOSIT_FAILED` | `CORE_RESOURCE_FULL` | `actor_id`: Worker; `target_id`: Core; `position`: shared cell | `{capacity: int}` | The Core is full at `population × 5`; cargo is unchanged. |
+| `DEPOSIT_FAILED` | `CORE_RESOURCE_FULL` | `actor_id`: Worker; `target_id`: Core; `position`: shared cell | `{capacity: int}` | The Core is full at `max(10, population × 5)`; cargo is unchanged. |
 | `DEPOSIT_SUCCEEDED` | absent | `actor_id`: Worker; `target_id`: Core; `position`: shared cell | `{amount: int, capacity: int, remaining: int}` | `amount` entered Core storage and `remaining` stayed on the Worker. |
 | `HARVEST_FAILED` | `NOT_RESOURCE_CELL` | `actor_id`: Worker; `position`: Worker cell | absent | Current terrain is not a resource cell. |
 | `HARVEST_FAILED` | `CARGO_FULL` | `actor_id`: Worker; `position`: Worker cell | absent | Worker already carries resources. |

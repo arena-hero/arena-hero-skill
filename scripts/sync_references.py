@@ -61,10 +61,10 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/reference/numbers.md": (
         "axis(c)",
         "Cargo piles",
-        "resource_capacity = population × 5",
+        "resource_capacity = max(10, population × 5)",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.5",
+        "Gameplay rules | v0.6",
         "Python SDK",
         "v0.2.3",
     ),
@@ -81,6 +81,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/quickstart.md": (
         "RESOURCE_DEPLETED",
         "cargo piles left by dead Workers",
+        "minimum capacity of 10",
         "resource_space",
     ),
     "docs/api-reference.md": (
@@ -88,6 +89,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "RESOURCE_DEPLETED",
         "SelfDestructAction",
         "WORKER_CARGO_DROPPED",
+        "CORE_RESOURCE_MINIMUM_CAPACITY",
         "owner_username",
     ),
 }
