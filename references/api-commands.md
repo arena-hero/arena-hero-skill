@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `a12c9ae930d7fe3a53ad9ff9f3dfcff6c3369465`: `docs/api/commands.md`.
+> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/api/commands.md`.
 
 # Command API
 
@@ -85,7 +85,7 @@ Read `type` first, then send only the fields shown in that row.
 | `WAIT` | Any | `{"type":"WAIT"}` | The Unit does nothing. |
 | `MOVE` | Any | `{"type":"MOVE","direction":"RIGHT"}` | The Unit tries to move one cardinal cell. |
 | `HARVEST` | Worker | `{"type":"HARVEST"}` | Consumes the point and loads 1 resource, or 2 while the player holds the Beacon. |
-| `DEPOSIT` | Worker | `{"type":"DEPOSIT"}` | Moves all cargo into the player's Core on the same cell. |
+| `DEPOSIT` | Worker | `{"type":"DEPOSIT"}` | Moves as much cargo as fits into the player's Core on the same cell. |
 | `SWEEP` | Vanguard | `{"type":"SWEEP","direction":"UP"}` | Deals 1 damage to each enemy entity in the adjacent cell. |
 | `SHOOT` | Ranger | `{"type":"SHOOT","target_id":"<uuid>","expected_cell":[120,85]}` | Tries to hit that target at that cell from cardinal range 1-3. |
 | `PICKUP_BEACON` | Any | `{"type":"PICKUP_BEACON"}` | Tries to pick up the ground Beacon on the actor's cell. |
@@ -115,7 +115,11 @@ Only a Worker can do either of these.
   chunk deterministically fills only its missing slots back to its fixed quota.
 - `DEPOSIT` needs a Worker with cargo and its own Core on the same cell.
 - A Core cannot receive a deposit during a migration-restricted Tick.
-- A failed deposit leaves the cargo where it was, on the Worker.
+- Core capacity is `population × 5`. A partial deposit leaves the remainder on
+  the Worker.
+- A full Core returns `DEPOSIT_FAILED` with
+  `CORE_RESOURCE_FULL`.
+- A failed deposit leaves all cargo where it was, on the Worker.
 
 ### Sweeping
 

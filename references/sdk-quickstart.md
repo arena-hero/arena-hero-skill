@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `d886848937e65a2c8b36b7507b008f9b0d112073`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `777c64f1fb357c8c2a8940e5dc7c99b8358f098e`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -111,6 +111,8 @@ Each `Turn` is a complete authoritative state snapshot for one Tick:
 turn.tick
 turn.state
 turn.resources
+turn.resource_capacity
+turn.resource_space
 turn.core
 turn.units
 turn.workers
@@ -124,6 +126,12 @@ turn.beacon
 turn.events
 turn.plan
 ```
+
+Core storage accepts 5 resources per living Unit. A partial deposit leaves its
+remainder on the Worker; a full Core rejects the deposit
+without deleting cargo. If population falls, stored resources above the new
+capacity are destroyed immediately. Use `turn.resource_space` before choosing
+`deposit()`.
 
 Use the filtered collections when possible:
 

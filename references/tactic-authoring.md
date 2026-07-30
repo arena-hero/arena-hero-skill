@@ -3,7 +3,7 @@
 Use this reference for tactic-script mode. Before making any tactical decision,
 read the complete bundled rules:
 
-- [Complete Arena Hero v0.4 rules](game-rules.md)
+- [Complete Arena Hero v0.5 rules](game-rules.md)
 
 Use the bundled documentation while authoring:
 
@@ -17,14 +17,14 @@ Use the bundled documentation while authoring:
 - [Errors and recovery](api-errors.md)
 
 Never infer a numeric rule from an enum name, an old tactic, or general game
-knowledge. If the live contract is newer than the bundled v0.4 rules, stop and
+knowledge. If the live contract is newer than the bundled v0.5 rules, stop and
 update the bundle; do not fill the gap with a plausible constant.
 
 Add a compatible PyPI release through the project's existing dependency
 manager. For a standalone script:
 
 ```bash
-python -m pip install 'arena-hero>=0.2.2,<0.3'
+python -m pip install 'arena-hero>=0.2.3,<0.3'
 ```
 
 Do not install the SDK from a Git repository.

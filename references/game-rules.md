@@ -1,10 +1,10 @@
-# Arena Hero v0.4 game rules
+# Arena Hero v0.5 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`16b152ba63f5be4fcff2c347d8edddf5324d9558+working-tree` on 29 July 2026.
+`bc16014cb039c34238bdef0f556219d6638ba4cc` on 30 July 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -122,10 +122,12 @@ Refill emits no global coordinate list and does not reveal fogged cells. A new
 node appears to a player only when its cell is inside that player's current
 vision in a later complete `state`.
 
-At the resource-contract migration boundary, keep the existing world, players,
-Cores, Units, Beacon, Tick, plans, events, and statistics. Replace the legacy
-permanent resource layout with the new dynamic layout in one atomic migration;
-old resource coordinates are not grandfathered.
+At a gameplay-contract migration boundary, keep the existing world, players,
+Cores, Units, Beacon, Tick, plans, events, and statistics. The finite-resource
+release replaces the legacy permanent resource layout in one atomic migration;
+old resource coordinates are not grandfathered. The v0.5 capacity release
+preserves the same state, then destroys Core inventory above the current
+population capacity during the first v0.5 resolution.
 
 Coordinates are signed 64-bit integers represented as `[x, y]`.
 
@@ -163,22 +165,24 @@ The following order is part of the rule contract:
 1. Lock the final valid Agent and Manual plans.
 2. Resolve every `SELF_DESTRUCT`, remove those Units, and drop any Worker cargo
    on their final cells.
-3. Charge upkeep from the remaining population and apply unpaid-upkeep damage. A fleet destroyed here does
+3. Destroy Core resources above the new capacity after those removals.
+4. Charge upkeep from the remaining population and apply unpaid-upkeep damage. A fleet destroyed here does
    not act later in the Tick.
-4. Resolve Unit movement and Core migrations reaching their fourth Tick.
-5. Validate new Core `START_MOVE` actions.
-6. Resolve Champion Beacon pickup and drop.
-7. Resolve Worker harvest and deposit.
-8. Resolve Core spawn and shield repair.
-9. Freeze one immutable combat snapshot and validate and accumulate all legal
+5. Resolve Unit movement and Core migrations reaching their fourth Tick.
+6. Validate new Core `START_MOVE` actions.
+7. Resolve Champion Beacon pickup and drop.
+8. Resolve Worker harvest and deposit.
+9. Resolve Core spawn and shield repair.
+10. Freeze one immutable combat snapshot and validate and accumulate all legal
    attacks.
-10. Apply damage simultaneously, remove destroyed objects, and process due
-   respawns.
-11. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
+11. Apply damage simultaneously, remove destroyed objects, then destroy Core
+    resources above any capacity reduced by combat.
+12. Process due respawns.
+13. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
     its current quota using the post-settlement world.
-12. Atomically commit the world, dynamic resources, results, journal, and new
+14. Atomically commit the world, dynamic resources, results, journal, and new
     clock.
-13. Announce the next Tick and publish fresh private states.
+15. Announce the next Tick and publish fresh private states.
 
 ### Atomicity, determinism, and recovery
 
@@ -253,9 +257,29 @@ current truth.
 | Maximum shield | 5 |
 | Maximum shield while holding the Beacon | 10 |
 | Vision | 5 |
-| Starting resources after spawn or respawn | 20 |
+| Starting resources after spawn or respawn | 5 |
 
 Damage and unpaid-upkeep damage consume shield before HP.
+
+### Resource storage
+
+Population counts living Units, not the Core. Each Unit provides 5 points of
+Core storage:
+
+```text
+resource_capacity = population x 5
+```
+
+The limit is strict. Whenever self-destruction or combat lowers population,
+stored resources above the new capacity are immediately destroyed. The owner
+receives `CORE_RESOURCE_OVERFLOW_DESTROYED` with
+`{amount: int, capacity: int}`. A new or respawned player starts with one Worker
+and 5 resources, exactly filling the initial capacity.
+
+A Worker deposits only what fits. Any remainder stays as Worker cargo. A full
+Core resolves the action as `DEPOSIT_FAILED` with `CORE_RESOURCE_FULL`; the
+Worker keeps all cargo. A successful full or partial deposit reports
+`{amount: int, capacity: int, remaining: int}`.
 
 A plan may specify at most one Core action:
 
@@ -405,6 +429,8 @@ Worker-specific actions are `HARVEST` and `DEPOSIT`.
 - A migrating Core or a Core recovering from migration cannot receive a
   deposit.
 - A failed deposit leaves cargo on the Worker.
+- Core storage is capped at `population x 5`. `DEPOSIT` moves only what fits;
+  a full Core returns `CORE_RESOURCE_FULL`.
 - Any Worker death adds its complete cargo amount to a persistent resource pile
   on the final cell. The owner receives `WORKER_CARGO_DROPPED`.
 - Workers cannot attack.
@@ -541,7 +567,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.4 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.5 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -581,7 +607,7 @@ A successful respawn creates:
 | Asset | Value |
 |---|---:|
 | Core | 5 HP and 5 shield |
-| Resources | 20 |
+| Resources | 5 |
 | Workers | 1 |
 | Spawn protection | none |
 

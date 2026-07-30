@@ -91,6 +91,11 @@ Before writing a tactic or submitting a plan:
    a position disappears, after
    `HARVEST_FAILED/RESOURCE_DEPLETED`, and whenever current visibility
    contradicts an old resource target.
+7. Treat Core storage as a strict `turn.population * 5` limit. If population
+   falls, the server immediately destroys stored resources above the new
+   capacity and reports `CORE_RESOURCE_OVERFLOW_DESTROYED`. Before sacrificing
+   or exposing a Unit, account for both the Unit and any Core inventory that
+   would exceed the lower capacity.
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 

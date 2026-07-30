@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `a12c9ae930d7fe3a53ad9ff9f3dfcff6c3369465`: `docs/agent/quickstart.md`.
+> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/agent/quickstart.md`.
 
 # Agent quickstart
 
@@ -54,7 +54,7 @@ arrives in the next message:
   "type": "state",
   "data": {
     "status": "ACTIVE",
-    "resources": 20,
+    "resources": 5,
     "population": 1,
     "population_tier": 0,
     "upkeep_next_tick": 0,

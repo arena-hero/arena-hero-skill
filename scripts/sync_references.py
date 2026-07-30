@@ -45,22 +45,28 @@ LINK_ALIASES = {
 
 DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/api/commands.md": (
+        "CORE_RESOURCE_FULL",
         "RESOURCE_DEPLETED",
         "SELF_DESTRUCT",
         "WORKER_CARGO_DROPPED",
     ),
     "docs/api/resolution-results.md": (
+        "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "RESOURCE_DEPLETED",
         "UNIT_SELF_DESTRUCTED",
         "WORKER_CARGO_DROPPED",
         "DROPPED_CARGO",
     ),
     "docs/api/state-model.md": ("dead Workers", "owner_username"),
-    "docs/reference/numbers.md": ("axis(c)", "Cargo piles"),
+    "docs/reference/numbers.md": (
+        "axis(c)",
+        "Cargo piles",
+        "resource_capacity = population × 5",
+    ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.4",
+        "Gameplay rules | v0.5",
         "Python SDK",
-        "v0.2.2",
+        "v0.2.3",
     ),
     "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
@@ -72,8 +78,13 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
 }
 
 SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
-    "docs/quickstart.md": ("RESOURCE_DEPLETED", "cargo piles left by dead Workers"),
+    "docs/quickstart.md": (
+        "RESOURCE_DEPLETED",
+        "cargo piles left by dead Workers",
+        "resource_space",
+    ),
     "docs/api-reference.md": (
+        "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "RESOURCE_DEPLETED",
         "SelfDestructAction",
         "WORKER_CARGO_DROPPED",

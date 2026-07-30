@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `a12c9ae930d7fe3a53ad9ff9f3dfcff6c3369465`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `efec8a27ca51e0a99a961844529ea7776518ddd9`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -62,6 +62,7 @@ damage or destruction participation. A Beacon carrier additionally receives
 | `UPKEEP_PAID` | absent | `actor_id`: Core; `position`: Core cell | `{due: int, paid: int, deficit: int}` | Upkeep was collected. A positive deficit is then applied as Core damage. |
 | `CORE_DAMAGED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: Core; `position`: Core cell | `{damage: int, shield_damage: int, hp_damage: int}` | Total Core damage and how it was split between shield and HP. |
 | `CORE_DESTROYED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: destroyed Core; `position`: destruction cell | For an attack with named participants: `{destroyed_by: string[]}`; otherwise absent | The player's Core and remaining Units were removed and respawn waiting began. |
+| `CORE_RESOURCE_OVERFLOW_DESTROYED` | absent | `actor_id`: Core; `position`: Core cell | `{amount: int, capacity: int}` | Population fell and resources above the new capacity were destroyed. |
 | `CORE_ACTION_FAILED` | `CORE_NOT_MOVING` or `CORE_ALREADY_MOVING` | `actor_id`: Core; `position`: Core cell | absent | `CANCEL_MOVE` was used on a normal Core, or an incompatible Core action was used during migration. |
 | `CORE_REPAIR_FAILED` | `SHIELD_FULL` or `INSUFFICIENT_RESOURCES` | `actor_id`: Core; `position`: Core cell | absent | One-shield repair could not be applied. |
 | `CORE_REPAIR_SUCCEEDED` | absent | `actor_id`: Core; `position`: Core cell | `{shield: int, cost: int}` | Shield after repair and resources spent. |
@@ -80,7 +81,8 @@ it for an attack, and only when at least one participant can be named.
 | `DEPOSIT_FAILED` | `WORKER_EMPTY` | `actor_id`: Worker; `position`: Worker cell | absent | Worker has no cargo. |
 | `DEPOSIT_FAILED` | `CORE_NOT_PRESENT` | `actor_id`: Worker; `position`: Worker cell | absent | Owned Core is absent or not on the same cell. |
 | `DEPOSIT_FAILED` | `CORE_MOVING` | `actor_id`: Worker; `target_id`: Core; `position`: Worker cell | absent | The colocated Core is migration-restricted this Tick. |
-| `DEPOSIT_SUCCEEDED` | absent | `actor_id`: Worker; `target_id`: Core; `position`: shared cell | `{amount: int}` | All Worker cargo moved into Core resources. |
+| `DEPOSIT_FAILED` | `CORE_RESOURCE_FULL` | `actor_id`: Worker; `target_id`: Core; `position`: shared cell | `{capacity: int}` | The Core is full at `population × 5`; cargo is unchanged. |
+| `DEPOSIT_SUCCEEDED` | absent | `actor_id`: Worker; `target_id`: Core; `position`: shared cell | `{amount: int, capacity: int, remaining: int}` | `amount` entered Core storage and `remaining` stayed on the Worker. |
 | `HARVEST_FAILED` | `NOT_RESOURCE_CELL` | `actor_id`: Worker; `position`: Worker cell | absent | Current terrain is not a resource cell. |
 | `HARVEST_FAILED` | `CARGO_FULL` | `actor_id`: Worker; `position`: Worker cell | absent | Worker already carries resources. |
 | `HARVEST_FAILED` | `RESOURCE_DEPLETED` | `actor_id`: Worker; `position`: consumed point | absent | Another eligible empty Worker with a lower UUID won this same point in the Tick. |

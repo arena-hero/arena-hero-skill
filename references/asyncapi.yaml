@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision a12c9ae930d7fe3a53ad9ff9f3dfcff6c3369465: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision efec8a27ca51e0a99a961844529ea7776518ddd9: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -79,7 +79,7 @@ components:
             type: state
             data:
               status: ACTIVE
-              resources: 20
+              resources: 0
               population: 0
               population_tier: 0
               upkeep_next_tick: 0
@@ -203,7 +203,10 @@ components:
         resources:
           type: integer
           minimum: 0
-          description: Resources stored in the player's Core. Worker cargo is separate.
+          description: |
+            Resources stored in the player's Core. Worker cargo is separate.
+            Storage is strictly limited to population * 5. If population falls,
+            resources above the new capacity are destroyed immediately.
         population:
           type: integer
           minimum: 0
@@ -428,6 +431,7 @@ components:
         - UPKEEP_PAID
         - CORE_DAMAGED
         - CORE_DESTROYED
+        - CORE_RESOURCE_OVERFLOW_DESTROYED
         - DEPOSIT_FAILED
         - DEPOSIT_SUCCEEDED
         - HARVEST_FAILED
@@ -517,6 +521,10 @@ components:
     DepositAction:
       type: object
       additionalProperties: false
+      description: |
+        Deposits only what fits under the Core capacity of population * 5.
+        Any remainder stays on the Worker. A full Core
+        resolves this action as DEPOSIT_FAILED with CORE_RESOURCE_FULL.
       required: [type]
       properties:
         type:
