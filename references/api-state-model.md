@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/api/state-model.md`.
+> Bundled from `arena-hero-doc` revision `ad73495d95f977fc5d2705058a9e1b74c696f811`: `docs/api/state-model.md`.
 
 # State model
 
@@ -69,8 +69,8 @@ If you want machine-readable definitions, use the
 
 | Field | Format | Required | Meaning |
 |---|---|---:|---|
-| `status` | `"ACTIVE"` or `"RESPAWNING"` | Yes | Whether the player has an active Core or is waiting to respawn. |
-| `respawn_at_tick` | positive int64 | Only when respawning | Tick of the next respawn attempt. |
+| `status` | `"ACTIVE"` or `"RESPAWNING"` | Yes | Whether the player has an active Core or is waiting for a spawn retry. |
+| `respawn_at_tick` | positive int64 | Only when respawning | Tick of the next spawn attempt after a placement failure. |
 | `resources` | integer ≥ 0 | Yes | Resources stored by the Core, capped at `max(10, population × 5)`; Worker cargo is separate. |
 | `population` | integer ≥ 0 | Yes | Living owned Units; the Core is not counted. |
 | `population_tier` | integer ≥ 0 | Yes | `floor(population / 20)`. |
@@ -80,9 +80,10 @@ If you want machine-readable definitions, use the
 | `events` | array | Yes | Resolution results addressed to this player. |
 
 When there is nothing to report, `objects` and `events` come through as empty
-arrays rather than going missing. While you are `RESPAWNING` the resource and
-population fields are still there, but you may have no Core of your own until
-`CORE_RESPAWNED` arrives.
+arrays rather than going missing. Core destruction normally respawns in the same
+Tick, so `RESPAWNING` is published only during initial admission or after the
+resolver cannot find a legal spawn. The resource and population fields remain,
+but you have no Core until `CORE_RESPAWNED` arrives.
 
 ## Champion Beacon {#champion-beacon}
 

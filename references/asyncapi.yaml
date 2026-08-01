@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 4d81ed8b200dec739cbabcce81392af3fe5f2d32: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision ad73495d95f977fc5d2705058a9e1b74c696f811: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -194,12 +194,12 @@ components:
         status:
           type: string
           enum: [ACTIVE, RESPAWNING]
-          description: ACTIVE has a live Core; RESPAWNING is waiting for a respawn attempt.
+          description: ACTIVE has a live Core; RESPAWNING means an initial or replacement spawn could not yet be placed and will retry.
         respawn_at_tick:
           type: integer
           format: int64
           minimum: 1
-          description: Present only while status is RESPAWNING.
+          description: Present only while status is RESPAWNING; identifies the next placement attempt and is not a cooldown.
         resources:
           type: integer
           minimum: 0

@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `ad73495d95f977fc5d2705058a9e1b74c696f811`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -11,7 +11,7 @@
 | Global command window | 15 seconds |
 | Resource replenishment | every 4 resolved Ticks (about 1 minute) |
 | Core migration | 4 logical Ticks per cell |
-| Core respawn delay | 20 logical Ticks |
+| Core respawn attempt | same Tick as destruction |
 | WebSocket Ping interval | 20 seconds |
 | WebSocket Pong timeout | 60 seconds |
 | Credential revalidation | approximately 5 seconds |

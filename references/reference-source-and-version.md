@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `ad73495d95f977fc5d2705058a9e1b74c696f811`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -11,9 +11,9 @@
 | HTTP and WebSocket API | v0.1 |
 | Gameplay rules | v0.7 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `fb7680fec34338d8f31fa0d656b29639e78c6a34` |
+| Reviewed server commit | `2b325502fe40ccda3ee615c48a15855d6822fabd` |
 | Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.4 |
-| Reviewed SDK commit | `08857e3a9c052521fdb840a98134737113e496de` |
+| Reviewed SDK commit | `02fea89c327b0211860b8b3823815003ee3a99fe` |
 | Server review date | 1 August 2026 |
 | SDK review date | 30 July 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
@@ -46,6 +46,7 @@ explicit contract-version decision:
 - the finite-resource quota, cargo-drop, consumption, refresh, and contention rules;
 - the strict `max(10, population × 5)` Core storage limit and overflow destruction;
 - the Ranger line-of-fire rule that only obstacles block shots;
+- the same-Tick Core respawn attempt and retry-only `RESPAWNING` state;
 - core balance rules that determine replayed outcomes.
 
 Everything else — copy, layout, diagrams, examples, the order things are explained

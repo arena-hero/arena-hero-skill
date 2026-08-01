@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `08857e3a9c052521fdb840a98134737113e496de`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `02fea89c327b0211860b8b3823815003ee3a99fe`: `docs/api-reference.md`.
 
 # API reference
 
@@ -159,7 +159,7 @@ difference is that `AsyncTurn.submit()` must be awaited.
 | `resources` | `int` | Resources currently stored in the Core. |
 | `resource_capacity` | `int` | Current storage capacity: `max(10, state.population * 5)`. |
 | `resource_space` | `int` | Non-negative space available for another deposit. |
-| `core` | `Core | None` | Controlled Core, or `None` while respawning. |
+| `core` | `Core | None` | Controlled Core, or `None` during initial admission or a failed-spawn retry. Destruction normally replaces the Core in the same Tick. |
 | `units` | `tuple[Unit, ...]` | All controlled Units. |
 | `workers` | `tuple[Worker, ...]` | Controlled Workers. |
 | `vanguards` | `tuple[Vanguard, ...]` | Controlled Vanguards. |

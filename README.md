@@ -32,7 +32,7 @@ the Skill does not need the documentation site to reconstruct the contract:
 - every state field, action, event, reason code, error, and retry rule;
 - the current v0.7 self-destruct, Worker cargo-drop, resource-node quota,
   strict `max(10, population × 5)` Core resource capacity, refill, visibility,
-  contention, and migration contract;
+  contention, migration, and same-Tick respawn contract;
 - complete Python SDK quickstart and API reference, including synchronous and
   asynchronous clients;
 - original OpenAPI and AsyncAPI schemas.

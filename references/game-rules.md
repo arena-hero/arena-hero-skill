@@ -4,7 +4,7 @@ This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`fb7680fec34338d8f31fa0d656b29639e78c6a34` on 1 August 2026.
+`2b325502fe40ccda3ee615c48a15855d6822fabd` on 1 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -178,7 +178,8 @@ The following order is part of the rule contract:
    attacks.
 11. Apply damage simultaneously, remove destroyed objects, then destroy Core
     resources above any capacity reduced by combat.
-12. Process due respawns.
+12. Immediately attempt to respawn newly destroyed Cores and process any
+    previously delayed spawn retries.
 13. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
     its current quota using the post-settlement world.
 14. Atomically commit the world, dynamic resources, results, journal, and new
@@ -600,9 +601,12 @@ When Core HP reaches zero:
 - cargo carried by those Workers remains on each final cell;
 - locked actions for those objects no longer matter;
 - a carried Beacon drops under the Beacon rule;
-- the player enters `RESPAWNING`.
+- the player temporarily enters `RESPAWNING` while the spawn resolver runs.
 
-The default respawn delay is 20 logical Ticks. Downtime does not advance it.
+There is no respawn cooldown. The deterministic resolver attempts to place a
+replacement Core and Worker later in the same resolution Tick. Under normal
+conditions, the next published state is already `ACTIVE` and contains both
+`CORE_DESTROYED` and `CORE_RESPAWNED` events.
 
 A successful respawn creates:
 
@@ -617,9 +621,9 @@ The Core and Worker receive fresh UUIDs.
 
 The deterministic resolver seeks a passable empty spawn cell 20-30 Manhattan
 cells from the nearest living Core, prefers lower nearby entity density, and
-requires at least two passable neighbors. If it finds no legal cell on the due
-Tick, it postpones the attempt by one Tick and tries the next deterministic
-candidate set.
+requires at least two passable neighbors. Only when it finds no legal cell does
+the player remain `RESPAWNING`; `respawn_at_tick` then identifies the next-Tick
+retry using a new deterministic candidate set.
 
 ## Commands, priority, replacement, and receipts
 

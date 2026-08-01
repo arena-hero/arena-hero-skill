@@ -172,7 +172,7 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "at most two occupying entities",
         "Manual explicit action > Agent explicit action > WAIT",
         "64 new submissions",
-        "20 logical Ticks",
+        "There is no respawn cooldown",
     }
     for rule in required_rules:
         assert rule in rules

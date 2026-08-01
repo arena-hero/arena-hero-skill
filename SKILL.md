@@ -98,6 +98,10 @@ Before writing a tactic or submitting a plan:
    reports `CORE_RESOURCE_OVERFLOW_DESTROYED`. Before sacrificing or exposing
    a Unit, account for both the Unit and any Core inventory that would exceed
    the lower capacity.
+8. Core destruction has no respawn cooldown. The server normally creates the
+   replacement Core and Worker later in the same Tick. A missing Core means
+   initial admission or a retry after no legal spawn position was available;
+   do not invent actions until a later authoritative Turn contains the Core.
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 
@@ -132,7 +136,8 @@ state fields, editing site-packages, or recreating the WebSocket parser.
    surrounding project is asynchronous or the user requests it.
 4. Separate tactic decisions from connection setup so decisions can be tested
    without a live credential.
-5. Handle missing Core state while respawning, visible terrain only, dynamic
+5. Handle the exceptional missing Core state during initial admission or a
+   failed-spawn retry, visible terrain only, dynamic
    resource nodes and cargo piles, current Unit capabilities, and prior
    resolution events.
 6. Submit one complete plan promptly after each Turn. Prefer a simpler valid

@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `08857e3a9c052521fdb840a98134737113e496de`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `02fea89c327b0211860b8b3823815003ee3a99fe`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -163,7 +163,9 @@ for event in turn.events:
         print("recovered", event.resource_amount, "at", event.position)
 ```
 
-`turn.core` is `None` while your player is respawning.
+`turn.core` is `None` only during initial admission or a spawn retry after the
+server could not find a legal position. Core destruction has no cooldown and
+normally produces a replacement in the same Tick.
 
 ## Control every object
 
