@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `02fea89c327b0211860b8b3823815003ee3a99fe`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `5de0af936ce7ead87b85c554fae55e10ddabbe53`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -191,6 +191,10 @@ if turn.core is not None:
 
 turn.submit()
 ```
+
+A Ranger hits only when the target resolves 1-3 cells away on the same row,
+column, or exact 45-degree diagonal. The SDK queues the shot but leaves this
+dynamic rule to the server, so choose targets from the current Turn carefully.
 
 Every controlled Unit and the Core has one action slot. A later action call
 replaces the earlier action in that slot.

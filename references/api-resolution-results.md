@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad73495d95f977fc5d2705058a9e1b74c696f811`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `75c760e7bcd564939407be8570fae66d89dc62eb`: `docs/api/resolution-results.md`.
 
 # Resolution results
 

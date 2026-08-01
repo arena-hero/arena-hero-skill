@@ -126,7 +126,7 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "v0.7 self-destruct" in normalized
+    assert "current v0.8 rules for eight-direction Ranger fire" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
@@ -169,6 +169,9 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "Worker | 2 | 3 | 5",
         "Vanguard | 4 | 4 | 10",
         "Ranger | 2 | 5 | 12",
+        "exact 45-degree diagonal",
+        "`(3, 3)` is range 3",
+        "obstacles beside the line do not block it",
         "at most two occupying entities",
         "Manual explicit action > Agent explicit action > WAIT",
         "64 new submissions",
@@ -178,8 +181,10 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         assert rule in rules
 
     normalized_rules = " ".join(rules.split())
-    assert "Only obstacles in intermediate cells block the shot" in normalized_rules
-    assert "Units and Cores never do, regardless of owner" in normalized_rules
+    assert (
+        "Only obstacles in intermediate shot cells block the shot" in normalized_rules
+    )
+    assert "Units, Cores, and obstacles beside a diagonal never do" in normalized_rules
     assert "obstacle, Unit, or Core" not in normalized_rules
 
 
@@ -217,6 +222,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "SELF_DESTRUCT",
             "Idempotency-Key",
             "RESOURCE_DEPLETED",
+            "exact 45-degree diagonal",
         },
         "api-state-model.md": {
             "# State model",
@@ -248,6 +254,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "AsyncArenaHeroClient",
             "turn.submit()",
             "RESOURCE_DEPLETED",
+            "exact 45-degree diagonal",
         },
         "sdk-reference.md": {
             "# API reference",
@@ -256,12 +263,14 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "latest_receipts",
             "RESOURCE_DEPLETED",
             "SelfDestructAction",
+            "exact 45-degree diagonal",
         },
         "reference-numbers.md": {
             "# Rules at a glance",
             "Global command window",
             "Core migration",
             "axis(c)",
+            "eight-direction range 1-3",
         },
         "reference-glossary.md": {
             "# Glossary",
@@ -271,7 +280,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.7",
+            "Gameplay rules | v0.8",
             "Python SDK",
             "v0.2.4",
             "Reviewed server commit",

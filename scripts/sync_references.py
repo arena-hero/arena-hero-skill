@@ -46,6 +46,7 @@ LINK_ALIASES = {
 DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/api/commands.md": (
         "CORE_RESOURCE_FULL",
+        "exact 45-degree diagonal",
         "RESOURCE_DEPLETED",
         "SELF_DESTRUCT",
         "WORKER_CARGO_DROPPED",
@@ -61,10 +62,11 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/reference/numbers.md": (
         "axis(c)",
         "Cargo piles",
+        "eight-direction range 1-3",
         "resource_capacity = max(10, population × 5)",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.7",
+        "Gameplay rules | v0.8",
         "Python SDK",
         "v0.2.4",
     ),
@@ -81,11 +83,13 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/quickstart.md": (
         "RESOURCE_DEPLETED",
         "cargo piles left by dead Workers",
+        "exact 45-degree diagonal",
         "minimum capacity of 10",
         "resource_space",
     ),
     "docs/api-reference.md": (
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
+        "exact 45-degree diagonal",
         "RESOURCE_DEPLETED",
         "SelfDestructAction",
         "WORKER_CARGO_DROPPED",

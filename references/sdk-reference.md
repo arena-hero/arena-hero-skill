@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `02fea89c327b0211860b8b3823815003ee3a99fe`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `5de0af936ce7ead87b85c554fae55e10ddabbe53`: `docs/api-reference.md`.
 
 # API reference
 
@@ -279,6 +279,11 @@ ranger.shoot(target_id, expected_cell=(120, 85))
 
 `target` may be a visible `Unit`, `Core`, `UnitView`, or `CoreView`. The SDK
 copies its UUID and current position into the command.
+
+At resolution, the server accepts targets 1-3 cells away along a horizontal,
+vertical, or exact 45-degree diagonal line. Relative offset `(3, 3)` is legal;
+`(2, 1)` is not. Only obstacles on intermediate shot cells block the line.
+Units, Cores, and obstacles beside a diagonal do not block it.
 
 When passing only a UUID or UUID string, `expected_cell` is required:
 

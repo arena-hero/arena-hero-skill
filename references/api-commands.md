@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad73495d95f977fc5d2705058a9e1b74c696f811`: `docs/api/commands.md`.
+> Bundled from `arena-hero-doc` revision `75c760e7bcd564939407be8570fae66d89dc62eb`: `docs/api/commands.md`.
 
 # Command API
 
@@ -87,7 +87,7 @@ Read `type` first, then send only the fields shown in that row.
 | `HARVEST` | Worker | `{"type":"HARVEST"}` | Consumes the point and loads 1 resource, or 2 while the player holds the Beacon. |
 | `DEPOSIT` | Worker | `{"type":"DEPOSIT"}` | Moves as much cargo as fits into the player's Core on the same cell. |
 | `SWEEP` | Vanguard | `{"type":"SWEEP","direction":"UP"}` | Deals 1 damage to each enemy entity in the adjacent cell. |
-| `SHOOT` | Ranger | `{"type":"SHOOT","target_id":"<uuid>","expected_cell":[120,85]}` | Tries to hit that target at that cell from cardinal range 1-3. |
+| `SHOOT` | Ranger | `{"type":"SHOOT","target_id":"<uuid>","expected_cell":[120,85]}` | Tries to hit that target at that cell from horizontal, vertical, or diagonal range 1-3. |
 | `PICKUP_BEACON` | Any | `{"type":"PICKUP_BEACON"}` | Tries to pick up the ground Beacon on the actor's cell. |
 | `DROP_BEACON` | Any | `{"type":"DROP_BEACON"}` | The current carrier tries to drop the Beacon. |
 | `SELF_DESTRUCT` | Any | `{"type":"SELF_DESTRUCT"}` | Removes this Unit before upkeep is calculated. |
@@ -136,9 +136,10 @@ A shot needs both fields:
 | `target_id` | UUID | The Unit or Core the Ranger is trying to hit. |
 | `expected_cell` | `[x, y]` | Where the Agent expects that target to be during resolution. |
 
-At resolution the target still has to be an enemy, still at `expected_cell`, on the
-same row or column, at range 1-3, with no obstacle in between. Units and Cores do
-not block the shot.
+At resolution the target still has to be an enemy, still at `expected_cell`, on
+the same row, column, or exact 45-degree diagonal, at range 1-3, with no obstacle
+on an intermediate shot cell. Relative offset `(3, 3)` is range 3; `(2, 1)` is
+not aligned. Units, Cores, and obstacles beside a diagonal do not block the shot.
 
 Every dynamic failure comes back as the same event:
 `{"event_type":"SHOT_MISSED","reason_code":"SHOT_MISSED"}`. You cannot tell from

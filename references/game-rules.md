@@ -1,10 +1,10 @@
-# Arena Hero v0.7 game rules
+# Arena Hero v0.8 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`2b325502fe40ccda3ee615c48a15855d6822fabd` on 1 August 2026.
+`59268f3048f3845dde1358a366365dcaba459185` on 1 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -128,7 +128,10 @@ release replaces the legacy permanent resource layout in one atomic migration;
 old resource coordinates are not grandfathered. The v0.6 capacity release
 preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
-inventory above the resulting capacity during resolution.
+inventory above the resulting capacity during resolution. The v0.8 diagonal-fire
+release also preserves the world and only upgrades rules metadata at an `OPEN`
+or `COMMITTED` boundary; a Tick already `LOCKED` or `RESOLVING` must finish under
+its old rules first.
 
 Coordinates are signed 64-bit integers represented as `[x, y]`.
 
@@ -393,7 +396,7 @@ one cardinal cell per Tick, and performs at most one action.
 |---|---:|---:|---:|---|
 | Worker | 2 | 3 | 5 | none |
 | Vanguard | 4 | 4 | 10 | 1 damage to adjacent target cell |
-| Ranger | 2 | 5 | 12 | 1 damage at cardinal range 1-3 |
+| Ranger | 2 | 5 | 12 | 1 damage at eight-direction range 1-3 |
 
 Every Unit supports `MOVE`, `PICKUP_BEACON`, `DROP_BEACON`,
 `SELF_DESTRUCT`, and `WAIT`.
@@ -455,18 +458,19 @@ A shot succeeds only when:
 
 1. the target is an enemy Unit or Core;
 2. the target is still at `expected_cell`;
-3. Ranger and target share one horizontal or vertical line;
-4. Manhattan distance is 1, 2, or 3;
+3. Ranger and target share a horizontal, vertical, or exact 45-degree diagonal line;
+4. distance along that line is 1, 2, or 3 — relative offset `(3, 3)` is range 3, while `(2, 1)` is not aligned;
 5. no intermediate cell contains an obstacle.
 
 Units and Cores never block Ranger fire, regardless of owner. An object
 colocated in the target cell does not block the shot to the selected `target_id`;
-there is no front-to-back ordering inside one cell.
+there is no front-to-back ordering inside one cell. For diagonal fire, only the
+intermediate diagonal cells are checked; obstacles beside the line do not block it.
 
 The command endpoint intentionally accepts an unseen or nonexistent target UUID
 so it cannot be used as a fog-of-war oracle. At resolution, a missing target,
-friendly target, moved target, diagonal or out-of-range target, and blocked line
-all produce the same private `SHOT_MISSED` result.
+friendly target, moved target, non-aligned or out-of-range target, and blocked
+line all produce the same private `SHOT_MISSED` result.
 
 An action may contain only the fields allowed for its type. An unrelated field,
 including `null`, rejects the entire plan with `UNEXPECTED_ACTION_FIELDS`.
@@ -570,7 +574,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.7 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.8 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -581,8 +585,8 @@ for 1. Multiple sweeps add.
 ### Ranger damage
 
 `SHOOT` damages one selected enemy object for 1 when all targeting and line rules
-remain valid in the combat snapshot. Only obstacles in intermediate cells block the
-shot. Units and Cores never do, regardless of owner.
+remain valid in the combat snapshot. Only obstacles in intermediate shot cells
+block the shot. Units, Cores, and obstacles beside a diagonal never do.
 
 ### Core damage and fleet removal
 

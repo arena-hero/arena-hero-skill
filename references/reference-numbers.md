@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad73495d95f977fc5d2705058a9e1b74c696f811`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `75c760e7bcd564939407be8570fae66d89dc62eb`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -36,7 +36,7 @@
 |---|---:|---:|---:|---|
 | Worker | 2 | 3 | 5 | none |
 | Vanguard | 4 | 4 | 10 | 1 to adjacent target cell |
-| Ranger | 2 | 5 | 12 | 1 at cardinal range 1-3 |
+| Ranger | 2 | 5 | 12 | 1 at eight-direction range 1-3 |
 
 ## World
 
