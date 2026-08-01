@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `21f149e36d8c5c445bca86181af33ed64b738442`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -113,7 +113,7 @@ The victim never gets a separate `UNIT_DESTROYED` event. Detect a kill from
 complete state.
 
 Every dynamic Ranger failure carries the same `SHOT_MISSED` reason — a missing or
-moved target, a friendly target, bad range, a blocked line, all of them. The
+moved target, a friendly target, bad range, an obstacle-blocked line, all of them. The
 result is designed to reveal nothing about hidden state.
 
 ## Movement events

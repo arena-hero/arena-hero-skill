@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `21f149e36d8c5c445bca86181af33ed64b738442`: `docs/api/commands.md`.
+> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/api/commands.md`.
 
 # Command API
 
@@ -137,12 +137,13 @@ A shot needs both fields:
 | `expected_cell` | `[x, y]` | Where the Agent expects that target to be during resolution. |
 
 At resolution the target still has to be an enemy, still at `expected_cell`, on the
-same row or column, at range 1-3, with no obstacle or entity in between.
+same row or column, at range 1-3, with no obstacle in between. Units and Cores do
+not block the shot.
 
 Every dynamic failure comes back as the same event:
 `{"event_type":"SHOT_MISSED","reason_code":"SHOT_MISSED"}`. You cannot tell from
 the result whether the target moved, turned out to be friendly, was out of range,
-or was hidden behind something.
+or was hidden behind an obstacle.
 
 ### Picking up and dropping the Beacon
 

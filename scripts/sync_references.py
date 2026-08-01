@@ -64,7 +64,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "resource_capacity = max(10, population × 5)",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.6",
+        "Gameplay rules | v0.7",
         "Python SDK",
         "v0.2.4",
     ),

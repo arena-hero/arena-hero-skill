@@ -126,7 +126,7 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "v0.6 self-destruct" in normalized
+    assert "v0.7 self-destruct" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
@@ -176,6 +176,11 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
     }
     for rule in required_rules:
         assert rule in rules
+
+    normalized_rules = " ".join(rules.split())
+    assert "Only obstacles in intermediate cells block the shot" in normalized_rules
+    assert "Units and Cores never do, regardless of owner" in normalized_rules
+    assert "obstacle, Unit, or Core" not in normalized_rules
 
 
 def test_bundled_api_and_sdk_documentation_is_complete() -> None:
@@ -266,7 +271,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.6",
+            "Gameplay rules | v0.7",
             "Python SDK",
             "v0.2.4",
             "Reviewed server commit",

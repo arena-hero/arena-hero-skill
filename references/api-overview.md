@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `21f149e36d8c5c445bca86181af33ed64b738442`: `docs/api/overview.md`.
+> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/api/overview.md`.
 
 # API overview
 

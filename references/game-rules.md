@@ -1,10 +1,10 @@
-# Arena Hero v0.6 game rules
+# Arena Hero v0.7 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`f81b6c95db339e144226ca92514ad3d3c87721d9` on 30 July 2026.
+`fb7680fec34338d8f31fa0d656b29639e78c6a34` on 1 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -222,8 +222,8 @@ itself is visible, but cells behind it are not. If a line passes exactly through
 a corner shared by two cells, both cells count; an obstacle on either side
 blocks the line.
 
-Units, Cores, and resource cells do not block vision. Units and Cores do block a
-Ranger's shot, which is a separate rule.
+Units, Cores, and resource cells do not block vision. They do not block a
+Ranger's shot, either. Only obstacle terrain blocks Ranger fire.
 
 ### Contents of `state`
 
@@ -307,8 +307,7 @@ A plan may specify at most one Core action:
   slot. A Core colocated with one Unit cannot spawn another.
 - A full-cell spawn fails with `CELL_UNIT_LIMIT` and spends no resources.
 - A newly spawned Unit cannot act in its creation Tick.
-- It does appear in that Tick's combat snapshot, can be attacked, and blocks
-  Ranger fire.
+- It does appear in that Tick's combat snapshot and can be attacked.
 - It starts contributing to upkeep on the following Tick.
 - Worker deposits resolve before spawn and repair, so deposited resources may
   pay for either in the same Tick. They cannot retroactively pay upkeep already
@@ -457,10 +456,11 @@ A shot succeeds only when:
 2. the target is still at `expected_cell`;
 3. Ranger and target share one horizontal or vertical line;
 4. Manhattan distance is 1, 2, or 3;
-5. no intermediate cell contains an obstacle, Unit, or Core.
+5. no intermediate cell contains an obstacle.
 
-An object colocated in the target cell does not block the shot to the selected
-`target_id`; there is no front-to-back ordering inside one cell.
+Units and Cores never block Ranger fire, regardless of owner. An object
+colocated in the target cell does not block the shot to the selected `target_id`;
+there is no front-to-back ordering inside one cell.
 
 The command endpoint intentionally accepts an unseen or nonexistent target UUID
 so it cannot be used as a fog-of-war oracle. At resolution, a missing target,
@@ -569,7 +569,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.6 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.7 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -580,8 +580,8 @@ for 1. Multiple sweeps add.
 ### Ranger damage
 
 `SHOOT` damages one selected enemy object for 1 when all targeting and line rules
-remain valid in the combat snapshot. Obstacles, Units, and Cores in intermediate
-cells block the shot regardless of owner.
+remain valid in the combat snapshot. Only obstacles in intermediate cells block the
+shot. Units and Cores never do, regardless of owner.
 
 ### Core damage and fleet removal
 

@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `21f149e36d8c5c445bca86181af33ed64b738442`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `4d81ed8b200dec739cbabcce81392af3fe5f2d32`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -9,12 +9,12 @@
 | Item | Value |
 |---|---|
 | HTTP and WebSocket API | v0.1 |
-| Gameplay rules | v0.6 |
+| Gameplay rules | v0.7 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `f81b6c95db339e144226ca92514ad3d3c87721d9` |
+| Reviewed server commit | `fb7680fec34338d8f31fa0d656b29639e78c6a34` |
 | Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.4 |
 | Reviewed SDK commit | `08857e3a9c052521fdb840a98134737113e496de` |
-| Server review date | 30 July 2026 |
+| Server review date | 1 August 2026 |
 | SDK review date | 30 July 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
 | Languages | English, Simplified Chinese |
@@ -45,6 +45,7 @@ explicit contract-version decision:
 - the map generator contract;
 - the finite-resource quota, cargo-drop, consumption, refresh, and contention rules;
 - the strict `max(10, population × 5)` Core storage limit and overflow destruction;
+- the Ranger line-of-fire rule that only obstacles block shots;
 - core balance rules that determine replayed outcomes.
 
 Everything else — copy, layout, diagrams, examples, the order things are explained
@@ -52,7 +53,7 @@ in — can improve freely, because none of it changes the game contract.
 
 ## Why there is no version picker yet
 
-The public API remains v0.1 and the current gameplay rules are v0.6, so this site
+The public API remains v0.1 and the current gameplay rules are v0.7, so this site
 publishes exactly one current version in English and Simplified Chinese. Once
 there is a first stable compatibility release, older contracts can be kept
 around as Docusaurus versions.
