@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `5de0af936ce7ead87b85c554fae55e10ddabbe53`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `9cfe08821b468002887e5dea2b4bc603a76abe47`: `docs/api-reference.md`.
 
 # API reference
 
@@ -264,6 +264,13 @@ A full Core resolves a deposit as `DEPOSIT_FAILED` with
 are destroyed immediately and reported as
 `CORE_RESOURCE_OVERFLOW_DESTROYED`.
 
+When an enemy Core is destroyed in combat, the player who dealt the most damage
+to that Core during the destruction Tick may receive a
+`CORE_RESOURCES_CAPTURED` event. Read `event.core_resource_capture` for the
+typed stored, available, destroyed, and capacity values. Tied damage uses raw
+player UUID order. Loot beyond `max(10, population * 5)` is destroyed, and no
+loot survives if the winner's Core also dies in that combat Tick.
+
 ### Vanguard
 
 | Method | Meaning |
@@ -399,6 +406,7 @@ Movement fields are either all present for `MOVING` or all absent for `NORMAL`.
 | `position` | `Position | None` |
 | `values` | `dict[str, Any] | None` |
 | `resource_amount` | `int | None` |
+| `core_resource_capture` | `CoreResourceCapture | None` |
 | `harvest_source` | `HarvestSource | None` |
 
 Event names and reason codes remain strings so newer server values do not break
@@ -407,8 +415,14 @@ an older SDK. See
 meanings.
 
 `resource_amount` safely reads the positive `amount` from
-`CORE_RESOURCE_OVERFLOW_DESTROYED`, `DEPOSIT_SUCCEEDED`,
+`CORE_RESOURCES_CAPTURED`, `CORE_RESOURCE_OVERFLOW_DESTROYED`, `DEPOSIT_SUCCEEDED`,
 `WORKER_CARGO_DROPPED`, and `HARVEST_SUCCEEDED`.
+`core_resource_capture` parses a `CORE_RESOURCES_CAPTURED` event into a
+`CoreResourceCapture` model. Its fields are `amount` (actually stored),
+`available` (the destroyed Core's inventory), `destroyed` (the part that did
+not fit), and `capacity` (the winner's post-combat capacity). `amount` can be
+zero when the winner's Core is full; `amount + destroyed` always equals
+`available`.
 `harvest_source` returns
 `HarvestSource.RESOURCE_NODE` or `HarvestSource.DROPPED_CARGO` for a successful
 harvest. Both properties return `None` when the event or a future value does not
@@ -580,4 +594,4 @@ For timing, replacement, receipts, and reconnect rules, read
 
 The `arena_hero` package exports the following public names from its top-level module:
 
-`CORE_RESOURCE_CAPACITY_PER_UNIT`, `CORE_RESOURCE_MINIMUM_CAPACITY`, `APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`, `core_resource_capacity`.
+`CORE_RESOURCE_CAPACITY_PER_UNIT`, `CORE_RESOURCE_MINIMUM_CAPACITY`, `APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreResourceCapture`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`, `core_resource_capacity`.

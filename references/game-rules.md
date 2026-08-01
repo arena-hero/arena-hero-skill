@@ -1,10 +1,10 @@
-# Arena Hero v0.8 game rules
+# Arena Hero v0.9 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`59268f3048f3845dde1358a366365dcaba459185` on 1 August 2026.
+`a998d8d7dd3809f0cf66a60f3afe61a7008ba2e2` on 1 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -129,7 +129,7 @@ old resource coordinates are not grandfathered. The v0.6 capacity release
 preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
 inventory above the resulting capacity during resolution. The v0.8 diagonal-fire
-release also preserves the world and only upgrades rules metadata at an `OPEN`
+release and v0.9 Core-resource-capture release also preserve the world and only upgrade rules metadata at an `OPEN`
 or `COMMITTED` boundary; a Tick already `LOCKED` or `RESOLVING` must finish under
 its old rules first.
 
@@ -179,8 +179,10 @@ The following order is part of the rule contract:
 9. Resolve Core spawn and shield repair.
 10. Freeze one immutable combat snapshot and validate and accumulate all legal
    attacks.
-11. Apply damage simultaneously, remove destroyed objects, then destroy Core
-    resources above any capacity reduced by combat.
+11. Apply damage simultaneously and remove dead Units. For each combat-destroyed
+    Core, transfer what fits to its highest-damage attacker's surviving Core;
+    destroy overflow, then remove the destroyed Core and its fleet. Finally,
+    destroy any remaining inventory above capacity reduced by combat.
 12. Immediately attempt to respawn newly destroyed Cores and process any
     previously delayed spawn retries.
 13. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
@@ -574,7 +576,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.8 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.9 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -593,19 +595,40 @@ block the shot. Units, Cores, and obstacles beside a diagonal never do.
 All Core damage consumes shield before HP. If combined damage reduces Core HP to
 zero, the fleet is removed after every already-locked legal snapshot attack has
 contributed. When several players damage the same object in the Tick that
-destroys it, input order does not create a unique last-hit winner.
+destroys it, every attacker receives destruction participation. Resource
+ownership is decided separately by total damage to that Core, never input order.
 
 ## Core destruction and respawn
 
 When Core HP reaches zero:
 
 - the Core is removed;
-- all stored resources are lost;
+- when combat caused the destruction, its inventory is offered to the player
+  who dealt the most damage to that Core during this Tick;
 - every Unit belonging to that player is removed;
 - cargo carried by those Workers remains on each final cell;
 - locked actions for those objects no longer matter;
 - a carried Beacon drops under the Beacon rule;
 - the player temporarily enters `RESPAWNING` while the spawn resolver runs.
+
+Every attacker still receives normal Core-destruction participation. For the
+inventory, the engine adds each player's damage to that Core during the
+destruction Tick. Highest damage wins; tied damage uses the lower raw player UUID.
+The winner must have a Core that survives all combat damage. Only the
+space inside its post-combat `max(10, population x 5)` capacity is stored; all
+overflow is destroyed.
+
+If the winner's Core also dies in that combat Tick, the victim's entire
+inventory is destroyed. It does not enter the winner's replacement Core or pass
+to the runner-up. A Core destroyed by unpaid upkeep yields no loot. When
+several Cores die in one Tick, victims resolve by raw player UUID order, so
+earlier captures consume capacity before later ones.
+
+A surviving winner receives `CORE_RESOURCES_CAPTURED` with
+`{amount: int, available: int, destroyed: int, capacity: int}`. `amount` is the
+amount actually stored, `available` is the victim's pre-destruction inventory,
+and `destroyed` is the part that did not fit. The event is still emitted with
+`amount: 0` when the winner's Core is already full.
 
 There is no respawn cooldown. The deterministic resolver attempts to place a
 replacement Core and Worker later in the same resolution Tick. Under normal

@@ -102,6 +102,13 @@ Before writing a tactic or submitting a plan:
    replacement Core and Worker later in the same Tick. A missing Core means
    initial admission or a retry after no legal spawn position was available;
    do not invent actions until a later authoritative Turn contains the Core.
+9. A combat-destroyed Core's inventory goes to the player who dealt the most
+   damage to that Core during the destruction Tick; tied damage uses raw player
+   UUID order. The winner stores only what fits the post-combat
+   `max(10, population * 5)` capacity and the rest is destroyed. If the
+   winner's Core also dies in that combat Tick, all loot is destroyed. Read
+   `CORE_RESOURCES_CAPTURED` or `event.core_resource_capture`; do not treat
+   destruction participation as resource ownership.
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 

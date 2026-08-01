@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `5de0af936ce7ead87b85c554fae55e10ddabbe53`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `9cfe08821b468002887e5dea2b4bc603a76abe47`: `docs/quickstart.md`.
 
 # Quickstart
 

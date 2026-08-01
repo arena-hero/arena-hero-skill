@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `75c760e7bcd564939407be8570fae66d89dc62eb`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -76,6 +76,10 @@ upkeep = tier × (tier + 1) / 2
 
 Deposits move only what fits. If population falls, stored resources above the
 new capacity are destroyed immediately.
+
+Combat-destroyed Core inventory goes to the player who dealt the most damage to
+that Core during the Tick, up to this capacity. Ties use raw player UUID order;
+overflow is destroyed, and all loot is destroyed if the winner's Core also dies.
 
 | Population | Upkeep |
 |---:|---:|

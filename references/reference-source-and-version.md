@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `75c760e7bcd564939407be8570fae66d89dc62eb`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -9,11 +9,11 @@
 | Item | Value |
 |---|---|
 | HTTP and WebSocket API | v0.1 |
-| Gameplay rules | v0.8 |
+| Gameplay rules | v0.9 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `59268f3048f3845dde1358a366365dcaba459185` |
-| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.4 |
-| Reviewed SDK commit | `5de0af936ce7ead87b85c554fae55e10ddabbe53` |
+| Reviewed server commit | `a998d8d7dd3809f0cf66a60f3afe61a7008ba2e2` |
+| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.5 |
+| Reviewed SDK commit | `9cfe08821b468002887e5dea2b4bc603a76abe47` |
 | Server review date | 1 August 2026 |
 | SDK review date | 1 August 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
@@ -45,6 +45,7 @@ explicit contract-version decision:
 - the map generator contract;
 - the finite-resource quota, cargo-drop, consumption, refresh, and contention rules;
 - the strict `max(10, population × 5)` Core storage limit and overflow destruction;
+- combat Core-loot winner selection, same-Tick mutual destruction, and capacity overflow destruction;
 - the Ranger eight-direction line-of-fire geometry and the rule that only
   obstacles on intermediate shot cells block shots;
 - the same-Tick Core respawn attempt and retry-only `RESPAWNING` state;
@@ -55,7 +56,7 @@ in — can improve freely, because none of it changes the game contract.
 
 ## Why there is no version picker yet
 
-The public API remains v0.1 and the current gameplay rules are v0.8, so this site
+The public API remains v0.1 and the current gameplay rules are v0.9, so this site
 publishes exactly one current version in English and Simplified Chinese. Once
 there is a first stable compatibility release, older contracts can be kept
 around as Docusaurus versions.

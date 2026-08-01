@@ -100,10 +100,14 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
-    assert "arena-hero==0.2.4" in readme
-    assert "arena-hero>=0.2.4,<0.3" in tactic_authoring
-    assert "arena-hero>=0.2.4,<0.3" in direct_play
-    assert workflow.count("arena-hero==0.2.4") == 2
+    assert "arena-hero==0.2.5" in readme
+    assert "arena-hero>=0.2.5,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.5,<0.3" in direct_play
+    assert (
+        workflow.count("arena-hero-python.git@9cfe08821b468002887e5dea2b4bc603a76abe47")
+        == 2
+    )
+    assert "CoreResourceCapture" in arena_hero.__all__
 
 
 def test_agent_metadata_matches_skill() -> None:
@@ -126,7 +130,7 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "current v0.8 rules for eight-direction Ranger fire" in normalized
+    assert "current v0.9 rules for eight-direction Ranger fire" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
@@ -164,6 +168,7 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "UNIT_SELF_DESTRUCTED",
         "WORKER_CARGO_DROPPED",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
+        "CORE_RESOURCES_CAPTURED",
         "resource_capacity = max(10, population x 5)",
         "DROPPED_CARGO",
         "Worker | 2 | 3 | 5",
@@ -176,6 +181,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "Manual explicit action > Agent explicit action > WAIT",
         "64 new submissions",
         "There is no respawn cooldown",
+        "Highest damage wins; tied damage uses the lower raw player UUID",
+        "If the winner's Core also dies in that combat Tick",
     }
     for rule in required_rules:
         assert rule in rules
@@ -280,9 +287,9 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.8",
+            "Gameplay rules | v0.9",
             "Python SDK",
-            "v0.2.4",
+            "v0.2.5",
             "Reviewed server commit",
         },
     }

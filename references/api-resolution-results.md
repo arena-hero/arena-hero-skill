@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `75c760e7bcd564939407be8570fae66d89dc62eb`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -63,6 +63,7 @@ damage or destruction participation. A Beacon carrier additionally receives
 | `CORE_DAMAGED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: Core; `position`: Core cell | `{damage: int, shield_damage: int, hp_damage: int}` | Total Core damage and how it was split between shield and HP. |
 | `CORE_DESTROYED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: destroyed Core; `position`: destruction cell | For an attack with named participants: `{destroyed_by: string[]}`; otherwise absent | The player's Core and remaining Units were removed. A replacement spawn is attempted later in the same Tick. |
 | `CORE_RESOURCE_OVERFLOW_DESTROYED` | absent | `actor_id`: Core; `position`: Core cell | `{amount: int, capacity: int}` | Population fell and resources above the new capacity were destroyed. |
+| `CORE_RESOURCES_CAPTURED` | absent | `actor_id`: winner's surviving Core; `target_id`: destroyed Core; `position`: destruction cell | `{amount: int, available: int, destroyed: int, capacity: int}` | The highest-damage player stored `amount` from the victim's `available` inventory; `destroyed` did not fit. `amount` may be zero. No event is emitted if the winner's Core also died. |
 | `CORE_ACTION_FAILED` | `CORE_NOT_MOVING` or `CORE_ALREADY_MOVING` | `actor_id`: Core; `position`: Core cell | absent | `CANCEL_MOVE` was used on a normal Core, or an incompatible Core action was used during migration. |
 | `CORE_REPAIR_FAILED` | `SHIELD_FULL` or `INSUFFICIENT_RESOURCES` | `actor_id`: Core; `position`: Core cell | absent | One-shield repair could not be applied. |
 | `CORE_REPAIR_SUCCEEDED` | absent | `actor_id`: Core; `position`: Core cell | `{shield: int, cost: int}` | Shield after repair and resources spent. |

@@ -52,6 +52,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "WORKER_CARGO_DROPPED",
     ),
     "docs/api/resolution-results.md": (
+        "CORE_RESOURCES_CAPTURED",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "RESOURCE_DEPLETED",
         "UNIT_SELF_DESTRUCTED",
@@ -66,9 +67,9 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "resource_capacity = max(10, population × 5)",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.8",
+        "Gameplay rules | v0.9",
         "Python SDK",
-        "v0.2.4",
+        "v0.2.5",
     ),
     "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
@@ -88,6 +89,8 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "resource_space",
     ),
     "docs/api-reference.md": (
+        "CORE_RESOURCES_CAPTURED",
+        "core_resource_capture",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "exact 45-degree diagonal",
         "RESOURCE_DEPLETED",

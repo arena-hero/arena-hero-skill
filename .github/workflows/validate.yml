@@ -25,7 +25,7 @@ jobs:
       - name: Run tests
         run: >-
           uv run --python 3.11
-          --with arena-hero==0.2.4
+          --with 'arena-hero @ git+https://github.com/arena-hero/arena-hero-python.git@9cfe08821b468002887e5dea2b4bc603a76abe47'
           --with pytest==8.4.2
           --with pyyaml==6.0.3
           python -m pytest -q
@@ -43,7 +43,7 @@ jobs:
       - name: Check types
         run: >-
           uvx
-          --with arena-hero==0.2.4
+          --with 'arena-hero @ git+https://github.com/arena-hero/arena-hero-python.git@9cfe08821b468002887e5dea2b4bc603a76abe47'
           --with pytest==8.4.2
           --with pyyaml==6.0.3
           ty@0.0.64 check scripts tests
