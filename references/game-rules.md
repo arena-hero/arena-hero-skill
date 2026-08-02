@@ -1,10 +1,10 @@
-# Arena Hero v0.9 game rules
+# Arena Hero v0.10 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`a998d8d7dd3809f0cf66a60f3afe61a7008ba2e2` on 1 August 2026.
+`5a3bcdf5fbc75574938dc35acf48b12145b37582` on 2 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -35,7 +35,8 @@ outside its scope.
 - A player owns at most one living Core at a time.
 - Each Unit and each generation of a Core has a non-enumerable UUID. The UUID
   remains stable while the object lives and is never reused after death.
-- Enemy state never includes the owning account ID, email address, or username.
+- A visible Core includes its public `owner_username`, rendered as `@username`;
+  internal account IDs, email addresses, and Unit ownership remain private.
 - A player activated during resolution is not inserted into a half-resolved
   snapshot. The server assigns a persistent activation Tick and processes the
   player's first spawn through the deterministic respawn resolver.
@@ -128,8 +129,9 @@ release replaces the legacy permanent resource layout in one atomic migration;
 old resource coordinates are not grandfathered. The v0.6 capacity release
 preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
-inventory above the resulting capacity during resolution. The v0.8 diagonal-fire
-release and v0.9 Core-resource-capture release also preserve the world and only upgrade rules metadata at an `OPEN`
+  inventory above the resulting capacity during resolution. The v0.8 diagonal-fire,
+  v0.9 Core-resource-capture, and v0.10 post-combat HP-recovery releases also
+  preserve the world and only upgrade rules metadata at an `OPEN`
 or `COMMITTED` boundary; a Tick already `LOCKED` or `RESOLVING` must finish under
 its old rules first.
 
@@ -176,20 +178,22 @@ The following order is part of the rule contract:
 6. Validate new Core `START_MOVE` actions.
 7. Resolve Champion Beacon pickup and drop.
 8. Resolve Worker harvest and deposit.
-9. Resolve Core spawn and shield repair.
-10. Freeze one immutable combat snapshot and validate and accumulate all legal
+9. Freeze one immutable combat snapshot and validate and accumulate all legal
    attacks.
-11. Apply damage simultaneously and remove dead Units. For each combat-destroyed
+10. Apply damage simultaneously and remove dead Units. For each combat-destroyed
     Core, transfer what fits to its highest-damage attacker's surviving Core;
     destroy overflow, then remove the destroyed Core and its fleet. Finally,
     destroy any remaining inventory above capacity reduced by combat.
-12. Immediately attempt to respawn newly destroyed Cores and process any
+11. Resolve surviving Unit `HEAL` actions in ascending raw UUID byte order.
+12. Resolve each surviving stationary Core's `HEAL`, `REPAIR_SHIELD`, or
+    `SPAWN` action. These actions may spend resources captured in step 10.
+13. Immediately attempt to respawn newly destroyed Cores and process any
     previously delayed spawn retries.
-13. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
+14. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
     its current quota using the post-settlement world.
-14. Atomically commit the world, dynamic resources, results, journal, and new
+15. Atomically commit the world, dynamic resources, results, statistics, journal, and new
     clock.
-15. Announce the next Tick and publish fresh private states.
+16. Announce the next Tick and publish fresh private states.
 
 ### Atomicity, determinism, and recovery
 
@@ -242,8 +246,9 @@ Each complete state contains:
 - Beacon `GROUND` or `CARRIED` status and an ownerless `carrier_id` only when
   the Beacon cell is visible.
 
-Visible enemy objects have `controlled: false` and no owner identity. Worker
-cargo is private and appears only on friendly Workers.
+Visible enemy objects have `controlled: false`. Enemy Cores include public
+`owner_username`; enemy Units have no owner identity. Worker cargo is private
+and appears only on friendly Workers.
 
 ### Exploration memory
 
@@ -292,6 +297,7 @@ Worker keeps all cargo. A successful full or partial deposit reports
 A plan may specify at most one Core action:
 
 - `SPAWN` with `unit_type`;
+- `HEAL`;
 - `REPAIR_SHIELD`;
 - `START_MOVE` with a cardinal `direction`;
 - `CANCEL_MOVE`;
@@ -313,11 +319,34 @@ A plan may specify at most one Core action:
   slot. A Core colocated with one Unit cannot spawn another.
 - A full-cell spawn fails with `CELL_UNIT_LIMIT` and spends no resources.
 - A newly spawned Unit cannot act in its creation Tick.
-- It does appear in that Tick's combat snapshot and can be attacked.
+- It is created after combat and cannot be attacked during its birth Tick.
 - It starts contributing to upkeep on the following Tick.
-- Worker deposits resolve before spawn and repair, so deposited resources may
-  pay for either in the same Tick. They cannot retroactively pay upkeep already
-  charged after the self-destruct phase.
+- Worker deposits resolve before combat, so deposited resources may fund Unit
+  healing and the Core action in the same Tick. Captured enemy Core inventory
+  may do the same. Neither can retroactively pay upkeep already charged after
+  the self-destruct phase.
+
+### HP recovery
+
+`HEAL` consumes a Unit's or Core's complete action and resolves after
+simultaneous combat damage. Every HP actually restored costs 1 resource from
+the owning Core. One action automatically restores as many missing HP as the
+remaining balance can pay for, up to the object's maximum HP.
+
+A Unit must still be alive and colocated with its own stationary Core.
+Unit heals resolve in ascending raw UUID byte order before the Core action. The Core
+action then uses the remaining resources. Fatal damage cannot be healed because
+the object is removed before this phase.
+
+It is valid to queue a heal at full HP or with no current resources. Nonfatal
+combat damage or captured resources may make it useful before resolution. If
+the condition is still unmet, the action fails privately and spends nothing.
+Successful events are `UNIT_HEAL_SUCCEEDED` and `CORE_HEAL_SUCCEEDED`, with
+`{amount: int, hp: int, cost: int}`. Failed events are `UNIT_HEAL_FAILED` with
+`HP_FULL`, `NOT_AT_OWN_CORE`, `CORE_MOVING`, or
+`INSUFFICIENT_RESOURCES`, and `CORE_HEAL_FAILED` with `HP_FULL` or
+`INSUFFICIENT_RESOURCES`. Lifetime totals use `unit_hp_recovered` and
+`core_hp_recovered`.
 
 ### Shield repair
 
@@ -341,7 +370,7 @@ next Tick           -> real movement attempt
 
 - Migration progresses without resubmitting an action. `WAIT` does not pause it.
 - Changing direction requires `CANCEL_MOVE`, which resets progress to zero.
-- While migrating, the Core cannot spawn, repair, pick up or drop the Beacon,
+- While migrating, the Core cannot spawn, heal, repair, pick up or drop the Beacon,
   or receive Worker deposits.
 - It still pays upkeep, takes damage, and retains its resource inventory.
 - Colocated Units do not move with it.
@@ -400,7 +429,7 @@ one cardinal cell per Tick, and performs at most one action.
 | Vanguard | 4 | 4 | 10 | 1 damage to adjacent target cell |
 | Ranger | 2 | 5 | 12 | 1 damage at eight-direction range 1-3 |
 
-Every Unit supports `MOVE`, `PICKUP_BEACON`, `DROP_BEACON`,
+Every Unit supports `MOVE`, `PICKUP_BEACON`, `DROP_BEACON`, `HEAL`,
 `SELF_DESTRUCT`, and `WAIT`.
 
 ### Self-destruct
@@ -410,6 +439,15 @@ action for the Tick. It gives no production-cost refund, deals no area damage,
 and awards no destruction participation. Worker cargo drops on the final cell. A carried
 Beacon drops at the Unit's cell and cannot be picked up until the next Tick.
 The owner receives `UNIT_SELF_DESTRUCTED`, and `units_lost` increases by one.
+
+### Unit healing
+
+`{"type":"HEAL"}` consumes the Unit's full action. After combat, the Unit
+must still be alive and share a cell with its own stationary Core. It restores
+1 HP per Core resource and may restore several HP at once. Unit heals resolve
+in ascending raw UUID byte order before the Core action. Fatal damage cannot be
+healed. A dynamic failure spends nothing; see the HP-recovery section for
+events and reasons.
 
 ### Worker
 
@@ -563,8 +601,8 @@ the next `MOVE` or `START_MOVE`. Closing the frontend stops that route.
 
 ## Combat
 
-Combat occurs after movement, Beacon actions, Worker actions, production, and
-shield repair.
+Combat occurs after movement, Beacon actions, and Worker actions, but before HP
+recovery, shield repair, and production.
 
 1. The engine freezes one immutable combat snapshot.
 2. It validates every locked attack against that snapshot.
@@ -572,11 +610,16 @@ shield repair.
 4. It applies all damage simultaneously.
 5. It removes dead Units and destroyed Cores only afterward.
 
+After removal, surviving Units heal first. The surviving Core may then heal,
+repair shield, or spawn. A repaired shield cannot absorb damage from the Tick
+that just ended, a newly spawned Unit cannot be attacked during its birth Tick,
+and fatal damage cannot be healed.
+
 An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.9 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.10 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage

@@ -63,6 +63,8 @@ Read the files required by the task:
   [references/asyncapi.yaml](references/asyncapi.yaml) for WebSocket messages.
 - **Compatibility checks:** read
   [references/reference-source-and-version.md](references/reference-source-and-version.md).
+  For release history, read
+  [references/reference-changelog.md](references/reference-changelog.md).
 
 When the user asks for a complete documentation review, compatibility audit, or
 new client implementation, read every file in the relevant group rather than
@@ -109,6 +111,13 @@ Before writing a tactic or submitting a plan:
    winner's Core also dies in that combat Tick, all loot is destroyed. Read
    `CORE_RESOURCES_CAPTURED` or `event.core_resource_capture`; do not treat
    destruction participation as resource ownership.
+10. `HEAL` is a full post-combat action. A surviving Unit may heal only while
+    sharing a cell with its own stationary Core; the Core may also heal. Each
+    restored HP costs 1 Core resource, and one action may restore several HP.
+    Unit heals resolve in raw UUID order before the Core action. Fatal damage
+    cannot be healed. A full-HP or currently unfunded heal may be queued in
+    advance and fails privately without cost if it is still impossible. Read
+    `event.healing` or the `UNIT_HEAL_*` and `CORE_HEAL_*` events for results.
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 

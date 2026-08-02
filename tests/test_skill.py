@@ -32,6 +32,7 @@ BUNDLED_DOCUMENTATION = {
     "sdk-reference.md",
     "reference-numbers.md",
     "reference-glossary.md",
+    "reference-changelog.md",
     "reference-source-and-version.md",
     "openapi.yaml",
     "asyncapi.yaml",
@@ -100,14 +101,16 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
-    assert "arena-hero==0.2.5" in readme
-    assert "arena-hero>=0.2.5,<0.3" in tactic_authoring
-    assert "arena-hero>=0.2.5,<0.3" in direct_play
+    assert "arena-hero-python.git@4a295851002ac5e73b34fa652e8d084f780c01ed" in readme
+    assert "arena-hero>=0.2.6,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.6,<0.3" in direct_play
     assert (
-        workflow.count("arena-hero-python.git@9cfe08821b468002887e5dea2b4bc603a76abe47")
+        workflow.count("arena-hero-python.git@4a295851002ac5e73b34fa652e8d084f780c01ed")
         == 2
     )
     assert "CoreResourceCapture" in arena_hero.__all__
+    assert "HealAction" in arena_hero.__all__
+    assert "HealingResult" in arena_hero.__all__
 
 
 def test_agent_metadata_matches_skill() -> None:
@@ -130,7 +133,7 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "current v0.9 rules for eight-direction Ranger fire" in normalized
+    assert "current v0.10 rules for eight-direction Ranger fire" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
@@ -169,6 +172,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "WORKER_CARGO_DROPPED",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "CORE_RESOURCES_CAPTURED",
+        "CORE_HEAL_SUCCEEDED",
+        "UNIT_HEAL_FAILED",
         "resource_capacity = max(10, population x 5)",
         "DROPPED_CARGO",
         "Worker | 2 | 3 | 5",
@@ -183,6 +188,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "There is no respawn cooldown",
         "Highest damage wins; tied damage uses the lower raw player UUID",
         "If the winner's Core also dies in that combat Tick",
+        "Unit heals resolve in ascending raw UUID byte order",
+        "Fatal damage cannot be healed",
     }
     for rule in required_rules:
         assert rule in rules
@@ -227,6 +234,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "PICKUP_BEACON",
             "DROP_BEACON",
             "SELF_DESTRUCT",
+            "HEAL",
             "Idempotency-Key",
             "RESOURCE_DEPLETED",
             "exact 45-degree diagonal",
@@ -246,6 +254,8 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "RESPAWN_DELAYED",
             "RESOURCE_DEPLETED",
             "UNIT_SELF_DESTRUCTED",
+            "UNIT_HEAL_SUCCEEDED",
+            "CORE_HEAL_FAILED",
             "WORKER_CARGO_DROPPED",
             "DROPPED_CARGO",
         },
@@ -270,12 +280,15 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "latest_receipts",
             "RESOURCE_DEPLETED",
             "SelfDestructAction",
+            "HealAction",
+            "HealingResult",
             "exact 45-degree diagonal",
         },
         "reference-numbers.md": {
             "# Rules at a glance",
             "Global command window",
             "Core migration",
+            "HP recovery",
             "axis(c)",
             "eight-direction range 1-3",
         },
@@ -285,11 +298,16 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "**World snapshot**",
             "**Resource point**",
         },
+        "reference-changelog.md": {
+            "# Changelog",
+            "Gameplay rules v0.10",
+            "Python SDK releases",
+        },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.9",
+            "Gameplay rules | v0.10",
             "Python SDK",
-            "v0.2.5",
+            "v0.2.6",
             "Reviewed server commit",
         },
     }
@@ -338,6 +356,14 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert schemas["SelfDestructAction"]["properties"]["type"]["const"] == (
         "SELF_DESTRUCT"
     )
+    assert schemas["HealAction"]["properties"]["type"]["const"] == "HEAL"
+    for event_type in {
+        "UNIT_HEAL_SUCCEEDED",
+        "UNIT_HEAL_FAILED",
+        "CORE_HEAL_SUCCEEDED",
+        "CORE_HEAL_FAILED",
+    }:
+        assert event_type in schemas["EventType"]["enum"]
 
 
 def test_dynamic_resource_contract_is_consistent_across_bundle() -> None:

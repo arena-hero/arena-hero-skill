@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `c6cdcee875ba7a985f2f580edc0c47cd4b17876e`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -23,6 +23,7 @@ Start from `event_type`, then read the fields listed for that event:
 | Looking for | Go to |
 |---|---|
 | Unit self-destruction | [Unit lifecycle events](#unit-lifecycle-events) |
+| HP recovery | [Healing events](#healing-events) |
 | Upkeep, Core damage, repair, or spawning | [Economy and Core events](#economy-and-core-events) |
 | Harvesting or depositing | [Worker events](#worker-events) |
 | Sweeps, shots, and damage | [Combat events](#combat-events) |
@@ -54,6 +55,19 @@ Optional fields that do not apply are left out rather than sent as `null`.
 Self-destruction also increments the owner's `units_lost`. It creates no attack
 damage or destruction participation. A Beacon carrier additionally receives
 `BEACON_DROPPED_ON_DEATH`.
+
+## Healing events
+
+| `event_type` | `reason_code` | IDs and position | `values` | Meaning |
+|---|---|---|---|---|
+| `UNIT_HEAL_SUCCEEDED` | absent | `actor_id`: healed Unit; `position`: shared Core cell | `{amount: int, hp: int, cost: int}` | The Unit recovered `amount` HP, now has `hp`, and spent the equal `cost`. |
+| `UNIT_HEAL_FAILED` | `HP_FULL`, `NOT_AT_OWN_CORE`, `CORE_MOVING`, or `INSUFFICIENT_RESOURCES` | `actor_id`: Unit; `position`: Unit cell | absent | Post-combat Unit healing could not start; nothing was spent. |
+| `CORE_HEAL_SUCCEEDED` | absent | `actor_id`: healed Core; `position`: Core cell | `{amount: int, hp: int, cost: int}` | The Core recovered `amount` HP, now has `hp`, and spent the equal `cost`. |
+| `CORE_HEAL_FAILED` | `HP_FULL` or `INSUFFICIENT_RESOURCES` | `actor_id`: Core; `position`: Core cell | absent | Post-combat Core healing could not start; nothing was spent. |
+
+A Unit killed during combat is gone before the healing phase, so it produces no
+heal event and spends no resource. `unit_hp_recovered` and `core_hp_recovered`
+count actual HP restored over the player's lifetime.
 
 ## Economy and Core events
 

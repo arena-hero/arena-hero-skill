@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a: static/openapi.yaml.
+# Bundled from arena-hero-doc revision c6cdcee875ba7a985f2f580edc0c47cd4b17876e: static/openapi.yaml.
 openapi: 3.1.0
 info:
   title: Arena Hero Game HTTP API
@@ -306,6 +306,17 @@ components:
       properties:
         type:
           const: SELF_DESTRUCT
+    HealAction:
+      type: object
+      additionalProperties: false
+      description: |
+        Resolves after combat. A surviving Unit must share a cell with its own
+        stationary Core; a Core heals itself. Costs 1 Core resource per HP
+        actually restored, up to full HP or the available balance.
+      required: [type]
+      properties:
+        type:
+          const: HEAL
     UnitAction:
       description: |
         Strict discriminator union. A field not listed for the selected type
@@ -320,6 +331,7 @@ components:
         - $ref: '#/components/schemas/PickupBeaconAction'
         - $ref: '#/components/schemas/DropBeaconAction'
         - $ref: '#/components/schemas/SelfDestructAction'
+        - $ref: '#/components/schemas/HealAction'
     CoreWaitAction:
       type: object
       additionalProperties: false
@@ -375,6 +387,7 @@ components:
         - $ref: '#/components/schemas/CancelMoveAction'
         - $ref: '#/components/schemas/CorePickupBeaconAction'
         - $ref: '#/components/schemas/CoreDropBeaconAction'
+        - $ref: '#/components/schemas/HealAction'
     CommandPlan:
       type: object
       additionalProperties: false

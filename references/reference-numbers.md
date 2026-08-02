@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `c6cdcee875ba7a985f2f580edc0c47cd4b17876e`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -28,6 +28,7 @@
 | Starting resources | 5 |
 | Starting Workers | 1 |
 | Resource capacity | `max(10, population × 5)` |
+| HP recovery | 1 resource → 1 HP, after combat |
 | Shield repair | 1 resource → 1 shield |
 
 ## Units

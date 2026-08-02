@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/api/state-model.md`.
+> Bundled from `arena-hero-doc` revision `c6cdcee875ba7a985f2f580edc0c47cd4b17876e`: `docs/api/state-model.md`.
 
 # State model
 

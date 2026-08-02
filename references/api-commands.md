@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `9a881bf066fe91ba2eaa4e9d7057c33cb8bd260a`: `docs/api/commands.md`.
+> Bundled from `arena-hero-doc` revision `c6cdcee875ba7a985f2f580edc0c47cd4b17876e`: `docs/api/commands.md`.
 
 # Command API
 
@@ -90,6 +90,7 @@ Read `type` first, then send only the fields shown in that row.
 | `SHOOT` | Ranger | `{"type":"SHOOT","target_id":"<uuid>","expected_cell":[120,85]}` | Tries to hit that target at that cell from horizontal, vertical, or diagonal range 1-3. |
 | `PICKUP_BEACON` | Any | `{"type":"PICKUP_BEACON"}` | Tries to pick up the ground Beacon on the actor's cell. |
 | `DROP_BEACON` | Any | `{"type":"DROP_BEACON"}` | The current carrier tries to drop the Beacon. |
+| `HEAL` | Any | `{"type":"HEAL"}` | After combat, restores HP at 1 Core resource per HP while at the owned stationary Core. |
 | `SELF_DESTRUCT` | Any | `{"type":"SELF_DESTRUCT"}` | Removes this Unit before upkeep is calculated. |
 
 ### Moving
@@ -164,12 +165,22 @@ to nearby objects. Worker cargo drops on that cell. If the Unit carries the Beac
 drops on that cell and remains unavailable for pickup until the next Tick.
 The Worker owner also receives `WORKER_CARGO_DROPPED` with the dropped amount.
 
+### Healing a Unit
+
+`HEAL` has no other fields and consumes the Unit's complete action. At
+resolution the Unit must still be alive on the same cell as its own stationary
+Core. After combat it spends one Core resource per missing HP, up to full HP or
+the available balance. Unit heals resolve in Unit UUID order before the Core
+action. Full HP, no resources, a different cell, or a moving Core are dynamic
+failures: the stored plan remains valid and no resource is spent.
+
 ## Core actions
 
 | `type` | JSON | What happens during resolution |
 |---|---|---|
 | `WAIT` | `{"type":"WAIT"}` | No new Core action. An existing migration continues. |
 | `SPAWN` | `{"type":"SPAWN","unit_type":"WORKER"}` | Pays the cost and creates one Unit on the Core cell. |
+| `HEAL` | `{"type":"HEAL"}` | After combat, spends 1 resource per missing Core HP, up to full HP. |
 | `REPAIR_SHIELD` | `{"type":"REPAIR_SHIELD"}` | Pays 1 resource to restore 1 shield, up to the current cap. |
 | `START_MOVE` | `{"type":"START_MOVE","direction":"LEFT"}` | Starts a four-Tick migration to an adjacent empty cell. |
 | `CANCEL_MOVE` | `{"type":"CANCEL_MOVE"}` | Stops the current migration and clears its progress. |
@@ -182,6 +193,11 @@ and 12 resources.
 A migrating Core can carry on with `WAIT` or stop with `CANCEL_MOVE`; anything else
 fails with `CORE_ALREADY_MOVING`. In the other direction, `CANCEL_MOVE` on a Core
 that is not moving fails with `CORE_NOT_MOVING`.
+
+Unit healing resolves before the Core action. The Core action then uses whatever
+resources remain, including inventory captured from an enemy Core during that
+combat Tick. Core healing, shield repair, and spawning all happen after combat;
+they cannot change combat that has already resolved.
 
 ## Extra fields make an action invalid
 

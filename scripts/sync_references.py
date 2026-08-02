@@ -23,6 +23,7 @@ DOC_FILES = {
     "docs/api/errors.md": "api-errors.md",
     "docs/reference/numbers.md": "reference-numbers.md",
     "docs/reference/glossary.md": "reference-glossary.md",
+    "docs/reference/changelog.md": "reference-changelog.md",
     "docs/reference/source-and-version.md": "reference-source-and-version.md",
 }
 
@@ -47,15 +48,18 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/api/commands.md": (
         "CORE_RESOURCE_FULL",
         "exact 45-degree diagonal",
+        "`HEAL`",
         "RESOURCE_DEPLETED",
         "SELF_DESTRUCT",
         "WORKER_CARGO_DROPPED",
     ),
     "docs/api/resolution-results.md": (
+        "CORE_HEAL_SUCCEEDED",
         "CORE_RESOURCES_CAPTURED",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "RESOURCE_DEPLETED",
         "UNIT_SELF_DESTRUCTED",
+        "UNIT_HEAL_FAILED",
         "WORKER_CARGO_DROPPED",
         "DROPPED_CARGO",
     ),
@@ -63,17 +67,20 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/reference/numbers.md": (
         "axis(c)",
         "Cargo piles",
+        "HP recovery",
         "eight-direction range 1-3",
         "resource_capacity = max(10, population × 5)",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.9",
+        "Gameplay rules | v0.10",
         "Python SDK",
-        "v0.2.5",
+        "v0.2.6",
     ),
-    "static/openapi.yaml": ("RESOURCE_DEPLETED", "SELF_DESTRUCT"),
+    "static/openapi.yaml": ("HEAL", "RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
         "RESOURCE_DEPLETED",
+        "UNIT_HEAL_SUCCEEDED",
+        "CORE_HEAL_FAILED",
         "SELF_DESTRUCT",
         "WORKER_CARGO_DROPPED",
         "owner_username",
@@ -82,6 +89,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
 
 SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/quickstart.md": (
+        "unit.heal()",
         "RESOURCE_DEPLETED",
         "cargo piles left by dead Workers",
         "exact 45-degree diagonal",
@@ -89,6 +97,8 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "resource_space",
     ),
     "docs/api-reference.md": (
+        "HealAction",
+        "HealingResult",
         "CORE_RESOURCES_CAPTURED",
         "core_resource_capture",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",

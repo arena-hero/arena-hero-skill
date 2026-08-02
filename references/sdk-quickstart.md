@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `9cfe08821b468002887e5dea2b4bc603a76abe47`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `4a295851002ac5e73b34fa652e8d084f780c01ed`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -54,6 +54,14 @@ that object's earlier action:
 worker.move(Direction.UP)
 worker.harvest()  # HARVEST replaces MOVE for this Worker.
 ```
+
+Queue HP recovery with `unit.heal()` or `turn.core.heal()`. Healing resolves
+after combat, costs one Core resource per HP actually recovered, and can spend
+multiple resources to reach full HP. A Unit must survive on the same cell as
+its own stationary Core. Unit heals use resources before the Core action, and
+fatal damage cannot be healed. You may queue healing while HP is full or the
+Core is currently empty because same-Tick damage and captured resources resolve
+first.
 
 The context manager closes the HTTP and WebSocket connections when the loop
 ends.

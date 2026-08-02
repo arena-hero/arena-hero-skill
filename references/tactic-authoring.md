@@ -3,7 +3,7 @@
 Use this reference for tactic-script mode. Before making any tactical decision,
 read the complete bundled rules:
 
-- [Complete Arena Hero v0.9 rules](game-rules.md)
+- [Complete Arena Hero v0.10 rules](game-rules.md)
 
 Use the bundled documentation while authoring:
 
@@ -17,14 +17,14 @@ Use the bundled documentation while authoring:
 - [Errors and recovery](api-errors.md)
 
 Never infer a numeric rule from an enum name, an old tactic, or general game
-knowledge. If the live contract is newer than the bundled v0.9 rules, stop and
+knowledge. If the live contract is newer than the bundled v0.10 rules, stop and
 update the bundle; do not fill the gap with a plausible constant.
 
 Add a compatible PyPI release through the project's existing dependency
 manager. For a standalone script:
 
 ```bash
-python -m pip install 'arena-hero>=0.2.5,<0.3'
+python -m pip install 'arena-hero>=0.2.6,<0.3'
 ```
 
 Do not install the SDK from a Git repository.
@@ -69,14 +69,18 @@ plans, and safely retries exact request bodies. Do not rebuild those parts.
 1. **Lifecycle:** `turn.core` can be `None` while respawning. Submit no invented
    actions.
 2. **Immediate survival:** react to visible threats and Core damage.
-3. **Economy:** use `turn.resources`, Worker cargo, resource cells visible in
+3. **Recovery:** when a damaged Unit can end the Tick at its own stationary
+   Core, consider `unit.heal()`; consider `turn.core.heal()` for Core HP. Unit
+   heals consume resources before the Core action, and fatal damage cannot be
+   healed.
+4. **Economy:** use `turn.resources`, Worker cargo, resource cells visible in
    the current Turn, and Core position.
-4. **Combat:** attack only visible targets with current positions.
-5. **Movement:** avoid visible obstacle cells; remember that fog is not current
+5. **Combat:** attack only visible targets with current positions.
+6. **Movement:** avoid visible obstacle cells; remember that fog is not current
    truth.
-6. **Champion Beacon:** use only the status and carrier details visible in the
+7. **Champion Beacon:** use only the status and carrier details visible in the
    current state.
-7. **Production and migration:** account for costs, upkeep, population, and
+8. **Production and migration:** account for costs, upkeep, population, and
    multi-Tick Core movement from the current Core view.
 
 If the requested tactic is underspecified, use a balanced starter policy:
@@ -97,11 +101,11 @@ Do not claim this default is optimal.
 
 | Controller | Extra controls |
 |---|---|
-| Any Unit | `move`, `pickup_beacon`, `drop_beacon`, `wait` |
+| Any Unit | `move`, `pickup_beacon`, `drop_beacon`, `heal`, `self_destruct`, `wait` |
 | Worker | `harvest`, `deposit` |
 | Vanguard | `sweep` |
 | Ranger | `shoot` |
-| Core | `spawn`, `repair_shield`, `start_move`, `cancel_move`, Beacon controls, `wait` |
+| Core | `spawn`, `heal`, `repair_shield`, `start_move`, `cancel_move`, Beacon controls, `wait` |
 
 Use `turn.workers`, `turn.vanguards`, `turn.rangers`, `turn.core`,
 `turn.visible_enemies`, `turn.resource_cells`, and `turn.obstacle_cells`.
@@ -145,6 +149,7 @@ Cover at least:
 - active state and respawning state;
 - no visible resource or enemy;
 - Worker harvesting and depositing;
+- Unit and Core healing, including competing Unit heals and dynamic failures;
 - same-cell Worker contention, cargo-pile persistence, and
   `RESOURCE_DEPLETED` retargeting;
 - resource disappearance, four-Tick refill, and fog-memory invalidation;
