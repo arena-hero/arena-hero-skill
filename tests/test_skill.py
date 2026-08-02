@@ -130,7 +130,8 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "current v0.10 rules for eight-direction Ranger fire" in normalized
+    assert "current v0.11 rules for eight-direction Ranger fire" in normalized
+    assert "unpaid-upkeep damage to excess Units" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
@@ -187,6 +188,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "If the winner's Core also dies in that combat Tick",
         "Unit heals resolve in ascending raw UUID byte order",
         "Fatal damage cannot be healed",
+        "nearest 19 Units",
+        "UPKEEP_DEFICIT",
     }
     for rule in required_rules:
         assert rule in rules
@@ -255,6 +258,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "CORE_HEAL_FAILED",
             "WORKER_CARGO_DROPPED",
             "DROPPED_CARGO",
+            "UPKEEP_DEFICIT",
         },
         "api-errors.md": {
             "# Errors and recovery",
@@ -269,6 +273,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "turn.submit()",
             "RESOURCE_DEPLETED",
             "exact 45-degree diagonal",
+            "UPKEEP_DEFICIT",
         },
         "sdk-reference.md": {
             "# API reference",
@@ -280,6 +285,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "HealAction",
             "HealingResult",
             "exact 45-degree diagonal",
+            "UPKEEP_DEFICIT",
         },
         "reference-numbers.md": {
             "# Rules at a glance",
@@ -288,6 +294,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "HP recovery",
             "axis(c)",
             "eight-direction range 1-3",
+            "nearest 19",
         },
         "reference-glossary.md": {
             "# Glossary",
@@ -297,12 +304,12 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-changelog.md": {
             "# Changelog",
-            "Gameplay rules v0.10",
+            "Gameplay rules v0.11",
             "Python SDK releases",
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.10",
+            "Gameplay rules | v0.11",
             "Python SDK",
             "v0.2.6",
             "Reviewed server commit",
@@ -349,6 +356,7 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert "RESOURCE_REFILLED" not in schemas["EventType"]["enum"]
     assert "UNIT_SELF_DESTRUCTED" in schemas["EventType"]["enum"]
     assert "WORKER_CARGO_DROPPED" in schemas["EventType"]["enum"]
+    assert "UPKEEP_DEFICIT" in schemas["ResolutionEvent"]["description"]
     assert "RESOURCE_DEPLETED" in schemas["HarvestAction"]["description"]
     assert schemas["SelfDestructAction"]["properties"]["type"]["const"] == (
         "SELF_DESTRUCT"

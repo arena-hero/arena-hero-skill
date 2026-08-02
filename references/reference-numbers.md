@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad6fc27a28727617858abc7cbb6832e7653ba3a9`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -77,6 +77,11 @@ upkeep = tier × (tier + 1) / 2
 
 Deposits move only what fits. If population falls, stored resources above the
 new capacity are destroyed immediately.
+
+If upkeep cannot be paid in full, every unpaid point deals 1 HP of damage to
+excess Units. The nearest 19 Units are protected; the others are damaged from
+farthest to nearest, with raw UUID order breaking equal-distance ties. The Core
+takes no upkeep-shortfall damage.
 
 Combat-destroyed Core inventory goes to the player who dealt the most damage to
 that Core during the Tick, up to this capacity. Ties use raw player UUID order;

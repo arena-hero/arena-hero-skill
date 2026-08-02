@@ -118,6 +118,14 @@ Before writing a tactic or submitting a plan:
     cannot be healed. A full-HP or currently unfunded heal may be queued in
     advance and fails privately without cost if it is still impossible. Read
     `event.healing` or the `UNIT_HEAL_*` and `CORE_HEAL_*` events for results.
+11. Upkeep spends available Core resources first. Any unpaid amount damages
+    excess Units, never the Core. The nearest 19 Units are protected; order the
+    rest by descending Manhattan distance from the current Core, then raw Unit
+    UUID bytes. Damage is concentrated in that order. An upkeep death happens
+    before actions and drops Worker cargo or a carried Beacon without awarding
+    destruction participation. A survivor keeps its action and may later heal.
+    Read `UPKEEP_PAID` and `UNIT_DAMAGED/UPKEEP_DEFICIT`; do not plan around the
+    removed behavior where upkeep damaged or destroyed the Core.
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 

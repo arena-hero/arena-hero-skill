@@ -1,10 +1,10 @@
-# Arena Hero v0.10 game rules
+# Arena Hero v0.11 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`5a3bcdf5fbc75574938dc35acf48b12145b37582` on 2 August 2026.
+`83ae972099ad99c21cbc15c1beaf4a4e3ca724d9` on 2 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -129,11 +129,11 @@ release replaces the legacy permanent resource layout in one atomic migration;
 old resource coordinates are not grandfathered. The v0.6 capacity release
 preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
-  inventory above the resulting capacity during resolution. The v0.8 diagonal-fire,
-  v0.9 Core-resource-capture, and v0.10 post-combat HP-recovery releases also
-  preserve the world and only upgrade rules metadata at an `OPEN`
-or `COMMITTED` boundary; a Tick already `LOCKED` or `RESOLVING` must finish under
-its old rules first.
+inventory above the resulting capacity during resolution. The v0.8
+diagonal-fire, v0.9 Core-resource-capture, v0.10 post-combat HP-recovery, and
+v0.11 excess-Unit upkeep-damage releases also preserve the world and only
+upgrade rules metadata at an `OPEN` or `COMMITTED` boundary; a Tick already
+`LOCKED` or `RESOLVING` must finish under its old rules first.
 
 Coordinates are signed 64-bit integers represented as `[x, y]`.
 
@@ -172,8 +172,8 @@ The following order is part of the rule contract:
 2. Resolve every `SELF_DESTRUCT`, remove those Units, and drop any Worker cargo
    on their final cells.
 3. Destroy Core resources above the new capacity after those removals.
-4. Charge upkeep from the remaining population and apply unpaid-upkeep damage. A fleet destroyed here does
-   not act later in the Tick.
+4. Charge upkeep from the remaining population. Apply any unpaid amount to the
+   farthest excess Units and remove upkeep deaths before they can act.
 5. Resolve Unit movement and Core migrations reaching their fourth Tick.
 6. Validate new Core `START_MOVE` actions.
 7. Resolve Champion Beacon pickup and drop.
@@ -271,7 +271,8 @@ current truth.
 | Vision | 5 |
 | Starting resources after spawn or respawn | 5 |
 
-Damage and unpaid-upkeep damage consume shield before HP.
+Combat damage consumes Core shield before Core HP. Unpaid upkeep damages excess
+Units and never damages the Core.
 
 ### Resource storage
 
@@ -283,8 +284,9 @@ resource_capacity = max(10, population x 5)
 ```
 
 The limit is strict. Zero, one, and two living Units all provide a capacity of
-10; three living Units provide 15. Whenever self-destruction or combat lowers
-population, stored resources above the new capacity are immediately destroyed.
+10; three living Units provide 15. Whenever population falls, stored resources
+above the new capacity are destroyed by the end of the Tick. An upkeep death
+happens only after the Core inventory has already reached zero.
 The owner receives `CORE_RESOURCE_OVERFLOW_DESTROYED` with
 `{amount: int, capacity: int}`. A new or respawned player starts with one Worker
 and 5 resources, leaving 5 free capacity.
@@ -337,6 +339,9 @@ A Unit must still be alive and colocated with its own stationary Core.
 Unit heals resolve in ascending raw UUID byte order before the Core action. The Core
 action then uses the remaining resources. Fatal damage cannot be healed because
 the object is removed before this phase.
+
+A Unit that survives unpaid-upkeep damage keeps its locked action and may heal
+that damage here. A Unit killed by upkeep is already gone and spends nothing.
 
 It is valid to queue a heal at full HP or with no current resources. Nonfatal
 combat damage or captured resources may make it useful before resolution. If
@@ -414,9 +419,24 @@ upkeep = tier x (tier + 1) / 2
 uses the remaining population. A newly spawned Unit starts paying on the next
 Tick; a Unit killed later in the Tick has already paid for this one.
 
-If resources cannot cover upkeep, inventory becomes zero and each missing
-resource deals 1 Core damage, shield first. If this destroys the Core, its fleet
-and locked actions are removed before any later phase.
+The server spends available Core resources first. If resources cannot cover
+upkeep, inventory becomes zero and each missing resource deals 1 HP of damage
+to an excess Unit. The Core never loses shield or HP from upkeep.
+
+The nearest 19 Units to the current Core are protected. Other Units are ordered
+by descending Manhattan distance from the Core; equal distances use ascending
+raw Unit UUID bytes. Damage is concentrated on the first Unit until it dies,
+then continues to the next, until the deficit is exhausted.
+
+An upkeep death is removed before movement, Beacon actions, Worker actions, and
+combat. Worker cargo and a carried Beacon drop at the death cell. The death
+increments `units_lost` and actual applied damage increments `damage_received`,
+but no player receives destruction participation. A survivor keeps its action
+and may heal after combat.
+
+`UPKEEP_PAID` reports `{due: int, paid: int, deficit: int}`. Every affected Unit
+also receives `UNIT_DAMAGED` with reason `UPKEEP_DEFICIT` and
+`{damage: int, hp: int}`; `hp: 0` means the Unit was removed.
 
 ## Units and actions
 
@@ -619,7 +639,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.10 has no random damage, dodge, critical hits, armor, automatic retaliation,
+v0.11 has no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -663,9 +683,9 @@ overflow is destroyed.
 
 If the winner's Core also dies in that combat Tick, the victim's entire
 inventory is destroyed. It does not enter the winner's replacement Core or pass
-to the runner-up. A Core destroyed by unpaid upkeep yields no loot. When
-several Cores die in one Tick, victims resolve by raw player UUID order, so
-earlier captures consume capacity before later ones.
+to the runner-up. Upkeep cannot destroy a Core under v0.11. When several Cores
+die in one Tick, victims resolve by raw player UUID order, so earlier captures
+consume capacity before later ones.
 
 A surviving winner receives `CORE_RESOURCES_CAPTURED` with
 `{amount: int, available: int, destroyed: int, capacity: int}`. `amount` is the

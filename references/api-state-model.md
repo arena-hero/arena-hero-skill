@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad6fc27a28727617858abc7cbb6832e7653ba3a9`: `docs/api/state-model.md`.
+> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/api/state-model.md`.
 
 # State model
 
@@ -74,7 +74,7 @@ If you want machine-readable definitions, use the
 | `resources` | integer ≥ 0 | Yes | Resources stored by the Core, capped at `max(10, population × 5)`; Worker cargo is separate. |
 | `population` | integer ≥ 0 | Yes | Living owned Units; the Core is not counted. |
 | `population_tier` | integer ≥ 0 | Yes | `floor(population / 20)`. |
-| `upkeep_next_tick` | integer ≥ 0 | Yes | `tier × (tier + 1) / 2` for the current population. |
+| `upkeep_next_tick` | integer ≥ 0 | Yes | `tier × (tier + 1) / 2` for the current population. Core resources pay first; a deficit damages farthest excess Units while protecting the nearest 19. |
 | `champion_beacon` | object | Yes | Public position and, when visible, carrier state. |
 | `objects` | array | Yes | Owned entities plus currently visible terrain and enemies. |
 | `events` | array | Yes | Resolution results addressed to this player. |

@@ -62,17 +62,19 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "UNIT_HEAL_FAILED",
         "WORKER_CARGO_DROPPED",
         "DROPPED_CARGO",
+        "UPKEEP_DEFICIT",
     ),
-    "docs/api/state-model.md": ("dead Workers", "owner_username"),
+    "docs/api/state-model.md": ("nearest 19", "owner_username"),
     "docs/reference/numbers.md": (
         "axis(c)",
         "Cargo piles",
         "HP recovery",
         "eight-direction range 1-3",
         "resource_capacity = max(10, population × 5)",
+        "nearest 19",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.10",
+        "Gameplay rules | v0.11",
         "Python SDK",
         "v0.2.6",
     ),
@@ -95,6 +97,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "exact 45-degree diagonal",
         "minimum capacity of 10",
         "resource_space",
+        "UPKEEP_DEFICIT",
     ),
     "docs/api-reference.md": (
         "HealAction",
@@ -108,6 +111,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "WORKER_CARGO_DROPPED",
         "CORE_RESOURCE_MINIMUM_CAPACITY",
         "owner_username",
+        "UPKEEP_DEFICIT",
     ),
 }
 

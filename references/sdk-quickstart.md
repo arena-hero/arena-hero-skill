@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `4a295851002ac5e73b34fa652e8d084f780c01ed`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `8f967aabad8798580e8c9f20bde0f082a8914c47`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -140,6 +140,22 @@ Unit. A partial deposit leaves its remainder on the Worker; a full Core rejects
 the deposit without deleting cargo. If population falls, stored resources above
 the new capacity are destroyed immediately. Use `turn.resource_space` before
 choosing `deposit()`.
+
+The server charges `turn.state.upkeep_next_tick` before movement. It spends
+available Core resources first. If resources run out, each unpaid point deals
+one HP of damage to an excess Unit; the 19 Units nearest the Core are protected,
+and farther Units are damaged first. The Core itself never takes unpaid-upkeep
+damage. Inspect the next Turn's private events:
+
+```python
+for event in turn.events:
+    if event.event_type == "UNIT_DAMAGED" and event.reason_code == "UPKEEP_DEFICIT":
+        print(event.target_id, event.values["damage"], event.values["hp"])
+```
+
+An upkeep-damaged survivor can still act in that Tick. A Unit killed by upkeep
+is removed before movement or combat; Worker cargo and a carried Beacon drop on
+its cell.
 
 Use the filtered collections when possible:
 

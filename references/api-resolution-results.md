@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad6fc27a28727617858abc7cbb6832e7653ba3a9`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -65,17 +65,17 @@ damage or destruction participation. A Beacon carrier additionally receives
 | `CORE_HEAL_SUCCEEDED` | absent | `actor_id`: healed Core; `position`: Core cell | `{amount: int, hp: int, cost: int}` | The Core recovered `amount` HP, now has `hp`, and spent the equal `cost`. |
 | `CORE_HEAL_FAILED` | `HP_FULL` or `INSUFFICIENT_RESOURCES` | `actor_id`: Core; `position`: Core cell | absent | Post-combat Core healing could not start; nothing was spent. |
 
-A Unit killed during combat is gone before the healing phase, so it produces no
-heal event and spends no resource. `unit_hp_recovered` and `core_hp_recovered`
-count actual HP restored over the player's lifetime.
+A Unit killed by upkeep or combat is gone before the healing phase, so it
+produces no heal event and spends no resource. `unit_hp_recovered` and
+`core_hp_recovered` count actual HP restored over the player's lifetime.
 
 ## Economy and Core events
 
 | `event_type` | `reason_code` | IDs and position | `values` | Meaning |
 |---|---|---|---|---|
-| `UPKEEP_PAID` | absent | `actor_id`: Core; `position`: Core cell | `{due: int, paid: int, deficit: int}` | Upkeep was collected. A positive deficit is then applied as Core damage. |
-| `CORE_DAMAGED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: Core; `position`: Core cell | `{damage: int, shield_damage: int, hp_damage: int}` | Total Core damage and how it was split between shield and HP. |
-| `CORE_DESTROYED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: destroyed Core; `position`: destruction cell | For an attack with named participants: `{destroyed_by: string[]}`; otherwise absent | The player's Core and remaining Units were removed. A replacement spawn is attempted later in the same Tick. |
+| `UPKEEP_PAID` | absent | `actor_id`: Core; `position`: Core cell | `{due: int, paid: int, deficit: int}` | Upkeep was collected. A positive `deficit` is then applied to excess Units, never the Core. |
+| `CORE_DAMAGED` | `ATTACK` | `target_id`: Core; `position`: Core cell | `{damage: int, shield_damage: int, hp_damage: int}` | Total combat damage and how it was split between shield and HP. |
+| `CORE_DESTROYED` | `ATTACK` | `target_id`: destroyed Core; `position`: destruction cell | `{destroyed_by: string[]}` when participants can be named; otherwise absent | The player's Core and remaining Units were removed. A replacement spawn is attempted later in the same Tick. |
 | `CORE_RESOURCE_OVERFLOW_DESTROYED` | absent | `actor_id`: Core; `position`: Core cell | `{amount: int, capacity: int}` | Population fell and resources above the new capacity were destroyed. |
 | `CORE_RESOURCES_CAPTURED` | absent | `actor_id`: winner's surviving Core; `target_id`: destroyed Core; `position`: destruction cell | `{amount: int, available: int, destroyed: int, capacity: int}` | The highest-damage player stored `amount` from the victim's `available` inventory; `destroyed` did not fit. `amount` may be zero. No event is emitted if the winner's Core also died. |
 | `CORE_ACTION_FAILED` | `CORE_NOT_MOVING` or `CORE_ALREADY_MOVING` | `actor_id`: Core; `position`: Core cell | absent | `CANCEL_MOVE` was used on a normal Core, or an incompatible Core action was used during migration. |
@@ -120,12 +120,18 @@ increment `resources_harvested` or `beacon_bonus_resources_harvested`.
 | `SWEEP_RESOLVED` | absent | `actor_id`: Vanguard; `position`: swept adjacent cell | `{targets_hit: int}` | Sweep resolved; `0` is a valid result. |
 | `SHOT_MISSED` | always `SHOT_MISSED` | `actor_id`: Ranger; `target_id`: requested UUID; `position`: submitted `expected_cell` | absent | Shot failed dynamically. The detailed cause is intentionally hidden. |
 | `SHOT_HIT` | absent | `actor_id`: Ranger; `target_id`: hit Core or Unit; `position`: target cell | `{damage: int}` | Valid shot contributed damage. |
-| `UNIT_DAMAGED` | `ATTACK` | `target_id`: damaged Unit; `position`: Unit cell | `{damage: int, hp: int}` | Aggregated damage and HP after damage, clamped to `0`. `hp: 0` means the Unit was destroyed. |
+| `UNIT_DAMAGED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: damaged Unit; `position`: Unit cell | `{damage: int, hp: int}` | Damage and HP afterward, clamped to `0`. `ATTACK` is simultaneous combat damage. `UPKEEP_DEFICIT` is concentrated pre-action damage to a farthest excess Unit. `hp: 0` means the Unit was destroyed. |
 | `DESTRUCTION_PARTICIPATION` | `UNIT` or `CORE` | `target_id`: destroyed object; `position`: destruction cell | absent | This player contributed at least one damage to the destroyed object. |
 
 The victim never gets a separate `UNIT_DESTROYED` event. Detect a kill from
 `UNIT_DAMAGED.values.hp === 0`, together with the Unit's absence from the new
 complete state.
+
+For `UPKEEP_DEFICIT`, the nearest 19 Units are protected. Other Units are
+ordered by descending Manhattan distance from the current Core, then raw UUID
+bytes. An upkeep death happens before movement or combat, drops Worker cargo and
+a carried Beacon, and grants no `DESTRUCTION_PARTICIPATION`. A survivor can
+still act later in that Tick.
 
 Every dynamic Ranger failure carries the same `SHOT_MISSED` reason — a missing or
 moved target, a friendly target, bad range, an obstacle-blocked line, all of them. The

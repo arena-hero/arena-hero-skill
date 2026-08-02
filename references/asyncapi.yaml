@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision ad6fc27a28727617858abc7cbb6832e7653ba3a9: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -219,7 +219,10 @@ components:
         upkeep_next_tick:
           type: integer
           minimum: 0
-          description: tier * (tier + 1) / 2 for the current population.
+          description: |
+            tier * (tier + 1) / 2 for the current population. Core resources
+            pay first. Any deficit damages farthest excess Units while the
+            nearest 19 Units are protected; the Core takes no deficit damage.
         champion_beacon:
           $ref: '#/components/schemas/ChampionBeacon'
         objects:
@@ -473,7 +476,9 @@ components:
       additionalProperties: false
       description: |
         Event-specific reason_code, ID, position, and values rules are defined
-        in /api/resolution-results. Optional fields are omitted, never null.
+        in /api/resolution-results. UPKEEP_PAID reports due, paid, and deficit.
+        UNIT_DAMAGED with reason_code UPKEEP_DEFICIT reports damage and post-
+        damage HP for an excess Unit. Optional fields are omitted, never null.
       required: [event_id, tick, event_type]
       properties:
         event_id:

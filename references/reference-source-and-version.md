@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `ad6fc27a28727617858abc7cbb6832e7653ba3a9`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -9,11 +9,11 @@
 | Item | Value |
 |---|---|
 | HTTP and WebSocket API | v0.1 |
-| Gameplay rules | v0.10 |
+| Gameplay rules | v0.11 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `5a3bcdf5fbc75574938dc35acf48b12145b37582` |
+| Reviewed server commit | `83ae972099ad99c21cbc15c1beaf4a4e3ca724d9` |
 | Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.6 |
-| Reviewed SDK commit | `4a295851002ac5e73b34fa652e8d084f780c01ed` |
+| Reviewed SDK commit | `8f967aabad8798580e8c9f20bde0f082a8914c47` |
 | Server review date | 2 August 2026 |
 | SDK review date | 2 August 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
@@ -48,6 +48,8 @@ explicit contract-version decision:
 - the map generator contract;
 - the finite-resource quota, cargo-drop, consumption, refresh, and contention rules;
 - the strict `max(10, population × 5)` Core storage limit and overflow destruction;
+- unpaid upkeep damaging farthest excess Units while protecting the nearest 19,
+  without damaging the Core;
 - combat Core-loot winner selection, same-Tick mutual destruction, and capacity overflow destruction;
 - post-combat Unit/Core healing, Unit-first resource priority, and the placement
   of Core healing, shield repair, and spawning after combat;
@@ -61,7 +63,7 @@ in — can improve freely, because none of it changes the game contract.
 
 ## Why there is no version picker yet
 
-The public API remains v0.1 and the current gameplay rules are v0.10, so this site
+The public API remains v0.1 and the current gameplay rules are v0.11, so this site
 publishes exactly one current version in English and Simplified Chinese. Once
 there is a first stable compatibility release, older contracts can be kept
 around as Docusaurus versions.

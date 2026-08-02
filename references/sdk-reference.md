@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `4a295851002ac5e73b34fa652e8d084f780c01ed`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `8f967aabad8798580e8c9f20bde0f082a8914c47`: `docs/api-reference.md`.
 
 # API reference
 
@@ -174,6 +174,13 @@ difference is that `AsyncTurn.submit()` must be awaited.
 
 `Position` is `tuple[int, int]` in `(x, y)` order.
 
+`state.upkeep_next_tick` is the upcoming charge. The server spends Core
+resources first; any `deficit` damages excess Units, never the Core. The nearest
+19 Units are protected. Remaining Units are ordered by descending Manhattan
+distance from the current Core, then raw UUID bytes, and damage is concentrated
+in that order. Upkeep deaths happen before actions; surviving damaged Units can
+still act.
+
 `resource_cells` contains visible natural points and Worker cargo piles, but not
 pile amounts. One successful harvest consumes a natural point; a partially
 recovered pile remains. Every fourth resolved Tick replenishes only missing
@@ -256,9 +263,10 @@ Extra controls:
 | `harvest()` | Harvest the resource on the current cell. |
 | `deposit()` | Deposit what fits while sharing a cell with the Core; any remainder stays on the Worker. |
 
-Any Worker death leaves its complete cargo amount as a recoverable resource pile
-on the final cell. For those events, use `event.resource_amount`; a successful
-recovery has `event.harvest_source is HarvestSource.DROPPED_CARGO`.
+Any Worker death, including unpaid-upkeep damage, leaves its complete cargo
+amount as a recoverable resource pile on the final cell. For those events, use
+`event.resource_amount`; a successful recovery has
+`event.harvest_source is HarvestSource.DROPPED_CARGO`.
 
 A full Core resolves a deposit as `DEPOSIT_FAILED` with
 `CORE_RESOURCE_FULL`. When population falls, resources above the new capacity
@@ -442,6 +450,14 @@ return `None`; inspect `reason_code` for `HP_FULL`, `INSUFFICIENT_RESOURCES`,
 `HarvestSource.RESOURCE_NODE` or `HarvestSource.DROPPED_CARGO` for a successful
 harvest. These helpers return `None` when the event or a future value does not
 match.
+
+For upkeep, first inspect `UPKEEP_PAID.values`: `due` is the full charge,
+`paid` is the amount removed from the Core, and `deficit` is the unpaid amount.
+Every affected Unit then has a `UNIT_DAMAGED` event with
+`reason_code == "UPKEEP_DEFICIT"`; `target_id` identifies the Unit and `values`
+contains the integer `damage` and post-damage `hp`. An `hp` of `0` means the Unit
+was removed before its action. These fields remain in the forward-compatible
+`values` mapping rather than a closed event enum.
 
 ### `HealingResult`
 

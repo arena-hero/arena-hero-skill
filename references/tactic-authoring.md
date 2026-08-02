@@ -3,7 +3,7 @@
 Use this reference for tactic-script mode. Before making any tactical decision,
 read the complete bundled rules:
 
-- [Complete Arena Hero v0.10 rules](game-rules.md)
+- [Complete Arena Hero v0.11 rules](game-rules.md)
 
 Use the bundled documentation while authoring:
 
@@ -17,7 +17,7 @@ Use the bundled documentation while authoring:
 - [Errors and recovery](api-errors.md)
 
 Never infer a numeric rule from an enum name, an old tactic, or general game
-knowledge. If the live contract is newer than the bundled v0.10 rules, stop and
+knowledge. If the live contract is newer than the bundled v0.11 rules, stop and
 update the bundle; do not fill the gap with a plausible constant.
 
 Add a compatible PyPI release through the project's existing dependency
@@ -92,7 +92,14 @@ If the requested tactic is underspecified, use a balanced starter policy:
 - reconsider a resource target after success or `RESOURCE_DEPLETED`, then use
   the next complete state to see whether a cargo pile remains;
 - defend against visible nearby enemies before pursuing distant goals;
-- spawn conservatively so expected upkeep does not starve the Core;
+- spawn conservatively so expected upkeep does not consume resources and damage
+  the farthest excess Units;
+- treat the nearest 19 Units as upkeep-protected, but do not confuse that with
+  combat protection; place expendable excess Units with the farthest-first
+  upkeep order in mind;
+- after `UNIT_DAMAGED/UPKEEP_DEFICIT`, remove `hp == 0` Units from tactical
+  assumptions and allow a surviving Unit's locked action or legal `HEAL` to
+  proceed;
 - leave an object without an action when no legal useful action is known.
 
 Do not claim this default is optimal.

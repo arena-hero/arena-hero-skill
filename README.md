@@ -23,18 +23,19 @@ The official guide is at
 
 ## Complete documentation included
 
-The repository carries Arena Hero API v0.1 and gameplay rules v0.10 locally, so
+The repository carries Arena Hero API v0.1 and gameplay rules v0.11 locally, so
 the Skill does not need the documentation site to reconstruct the contract:
 
 - complete gameplay rules and numeric reference;
 - raw Agent quickstart and reliable command loop;
 - HTTP command API and WebSocket protocol;
 - every state field, action, event, reason code, error, and retry rule;
-- the current v0.10 rules for eight-direction Ranger fire, self-destruct,
+- the current v0.11 rules for eight-direction Ranger fire, self-destruct,
   Worker cargo-drop, resource-node quota,
   strict `max(10, population × 5)` Core resource capacity, refill, visibility,
   contention, migration, Core resource capture, post-combat Unit/Core HP
-  recovery, and the same-Tick respawn contract;
+  recovery, unpaid-upkeep damage to excess Units, and the same-Tick respawn
+  contract;
 - complete Python SDK quickstart and API reference, including synchronous and
   asynchronous clients;
 - original OpenAPI and AsyncAPI schemas.
