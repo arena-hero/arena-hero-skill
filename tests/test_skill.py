@@ -101,13 +101,10 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
-    assert "arena-hero-python.git@4a295851002ac5e73b34fa652e8d084f780c01ed" in readme
+    assert "arena-hero==0.2.6" in readme
     assert "arena-hero>=0.2.6,<0.3" in tactic_authoring
     assert "arena-hero>=0.2.6,<0.3" in direct_play
-    assert (
-        workflow.count("arena-hero-python.git@4a295851002ac5e73b34fa652e8d084f780c01ed")
-        == 2
-    )
+    assert workflow.count("arena-hero==0.2.6") == 2
     assert "CoreResourceCapture" in arena_hero.__all__
     assert "HealAction" in arena_hero.__all__
     assert "HealingResult" in arena_hero.__all__
