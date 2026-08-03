@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `880e3a3869300053c8a99092b7495ba4a97f2c0e`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `e32ff948b7ee05fa932a1305eef164bc45fc2986`: `docs/api-reference.md`.
 
 # API reference
 
@@ -289,9 +289,14 @@ loot survives if the winner's Core also dies in that combat Tick.
 ### Ranger
 
 ```python
+ranger.shoot_cell((120, 85))
 ranger.shoot(target)
 ranger.shoot(target_id, expected_cell=(120, 85))
 ```
+
+`shoot_cell(expected_cell)` does not require a visible target. After movement,
+the server selects the lowest-HP hostile in that cell, breaking ties by UUID.
+An empty cell resolves as `SHOT_MISSED`.
 
 `target` may be a visible `Unit`, `Core`, `UnitView`, or `CoreView`. The SDK
 copies its UUID and current position into the command.
@@ -559,7 +564,7 @@ does not merge it with an earlier plan.
 | `HarvestAction` | none |
 | `DepositAction` | none |
 | `SweepAction` | `direction` |
-| `ShootAction` | `target_id`, `expected_cell` |
+| `ShootAction` | `expected_cell`; optional `target_id` |
 | `PickupBeaconAction` | none |
 | `DropBeaconAction` | none |
 | `SelfDestructAction` | none |

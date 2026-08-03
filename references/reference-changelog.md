@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/reference/changelog.md`.
+> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/reference/changelog.md`.
 
 # Changelog
 
@@ -15,6 +15,30 @@ see [Source and version policy](reference-source-and-version.md).
 
 ## 3 August 2026
 
+### Gameplay rules v0.13 — true Ranger cell fire
+
+- `SHOOT` keeps its name and always uses `expected_cell`, but `target_id` is now
+  optional. Existing precision-target commands remain fully compatible.
+- Without `target_id`, a Ranger may fire at any unobstructed horizontal,
+  vertical, or exact-diagonal cell at range 1–3, even when it is empty when the
+  command is submitted.
+- Movement resolves first. The server hits the lowest-HP hostile then present
+  in that cell, breaking HP ties by raw UUID order; an empty cell resolves as
+  the normal indistinguishable `SHOT_MISSED`.
+- Both web clients now always enable Ranger shooting and highlight every legal
+  firing cell instead of requiring the frontend to invent a target UUID.
+- Python SDK v0.2.8 adds `ranger.shoot_cell(position)` and makes
+  `ShootAction.target_id` optional while retaining `ranger.shoot(...)`.
+
+This fixes the 2 August web-only approximation: that version looked like a cell
+selector but still refused to fire unless it could nominate a visible enemy as
+`target_id`. HTTP and WebSocket remain API v0.1; gameplay rules advance to
+v0.13 because server combat selection changed.
+
+Source: [server `57c2a5b`](https://github.com/arena-hero/arena-hero/commit/57c2a5b2c070c808092ddcf5425d0c87773fc6e2),
+[frontend `ceaf2b6`](https://github.com/arena-hero/arena-hero-web/commit/ceaf2b60b51882dedd65e15f9205d9fae91945ae),
+and [SDK `e32ff94`](https://github.com/arena-hero/arena-hero-python/commit/e32ff948b7ee05fa932a1305eef164bc45fc2986).
+
 ### Gameplay rules v0.12 — unconditional Core self-destruction
 
 - Every living Core can submit `{"type":"SELF_DESTRUCT"}` with no resource,
@@ -28,9 +52,8 @@ see [Source and version policy](reference-source-and-version.md).
   `destroyed_by`, then follows the normal same-Tick respawn flow.
 - Both web clients add a destructive Core action with confirmation and dedicated
   Tick-result/respawn feedback.
-- Python SDK v0.2.7 source adds `core.self_destruct()` and accepts
-  `SelfDestructAction` as a strict Core action. PyPI remains on v0.2.6 until a
-  separate package release.
+- Python SDK v0.2.7 adds `core.self_destruct()` and accepts
+  `SelfDestructAction` as a strict Core action.
 
 This adds a new strict `core_action.type` enum value while keeping HTTP and
 WebSocket API v0.1. Clients with a closed Core-action union must update before
@@ -52,6 +75,9 @@ and [SDK `880e3a3`](https://github.com/arena-hero/arena-hero-python/commit/880e3
   move away when predicting movement into an empty cell.
 - This is a web-client and tutorial improvement. Server combat rules and command
   JSON are unchanged.
+
+This client-only implementation was later superseded by rules v0.13 above,
+which allows genuine target-free cell shots.
 
 ### Public lifetime leaderboards
 
@@ -260,7 +286,8 @@ SDK versions are separate from gameplay rule versions.
 
 | Version | Date | Developer-visible change |
 |---|---|---|
-| 0.2.7 source | 3 Aug 2026 | Adds `core.self_destruct()` and accepts strict `SelfDestructAction` plans for Cores; committed but not yet published to PyPI. |
+| 0.2.8 | 3 Aug 2026 | Adds `ranger.shoot_cell(position)` and accepts `ShootAction` without `target_id`; released on PyPI. |
+| 0.2.7 | 3 Aug 2026 | Adds `core.self_destruct()` and accepts strict `SelfDestructAction` plans for Cores. |
 | 0.2.6 | 2 Aug 2026 | PyPI release adding Unit/Core healing, typed `HealingResult`, and the `CoreResourceCapture` model from the unreleased 0.2.5 source. |
 | 0.2.5 source | 1 Aug 2026 | Adds typed `CoreResourceCapture`; committed but not yet published to PyPI. |
 | 0.2.4 | 30 Jul 2026 | Adds the minimum Core-capacity contract and release metadata. |

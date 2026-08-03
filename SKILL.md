@@ -117,21 +117,27 @@ Before writing a tactic or submitting a plan:
    the Beacon at actual positions, grants no credit or loot, and enters normal
    same-Tick respawn. Read `CORE_DESTROYED/SELF_DESTRUCT`; do not invent an
    attacker.
-10. A combat-destroyed Core's inventory goes to the player who dealt the most
+10. Keep the Ranger action as `SHOOT`. Use `ranger.shoot_cell(position)` to fire
+    at any unobstructed horizontal, vertical, or exact-diagonal cell at range
+    1-3 without inventing a target UUID. Movement resolves first; the server
+    hits the lowest-HP hostile then in that cell, breaking ties by raw UUID
+    order, or returns `SHOT_MISSED` for an empty cell. Use `ranger.shoot(...)`
+    when precision tracking of one known target is intentional.
+11. A combat-destroyed Core's inventory goes to the player who dealt the most
    damage to that Core during the destruction Tick; tied damage uses raw player
    UUID order. The winner stores only what fits the post-combat
    `max(10, population * 5)` capacity and the rest is destroyed. If the
    winner's Core also dies in that combat Tick, all loot is destroyed. Read
    `CORE_RESOURCES_CAPTURED` or `event.core_resource_capture`; do not treat
    destruction participation as resource ownership.
-11. `HEAL` is a full post-combat action. A surviving Unit may heal only while
+12. `HEAL` is a full post-combat action. A surviving Unit may heal only while
     sharing a cell with its own stationary Core; the Core may also heal. Each
     restored HP costs 1 Core resource, and one action may restore several HP.
     Unit heals resolve in raw UUID order before the Core action. Fatal damage
     cannot be healed. A full-HP or currently unfunded heal may be queued in
     advance and fails privately without cost if it is still impossible. Read
     `event.healing` or the `UNIT_HEAL_*` and `CORE_HEAL_*` events for results.
-12. Upkeep spends available Core resources first. Any unpaid amount damages
+13. Upkeep spends available Core resources first. Any unpaid amount damages
     excess Units, never the Core. The nearest 19 Units are protected; order the
     rest by descending Manhattan distance from the current Core, then raw Unit
     UUID bytes. Damage is concentrated in that order. An upkeep death happens

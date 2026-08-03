@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/api/leaderboard.md`.
+> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/api/leaderboard.md`.
 
 # Leaderboard API
 

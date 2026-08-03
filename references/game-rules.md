@@ -1,10 +1,10 @@
-# Arena Hero v0.12 game rules
+# Arena Hero v0.13 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`bdd68e86c778cf973452fecd5cb6a4bcf091ad45` on 3 August 2026.
+`57c2a5b2c070c808092ddcf5425d0c87773fc6e2` on 3 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -131,7 +131,8 @@ preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
 inventory above the resulting capacity during resolution. The v0.8
 diagonal-fire, v0.9 Core-resource-capture, v0.10 post-combat HP-recovery, and
-v0.11 excess-Unit upkeep-damage and v0.12 Core-self-destruct releases also
+v0.11 excess-Unit upkeep-damage, v0.12 Core-self-destruct, and v0.13 target-free
+Ranger cell-fire releases also
 preserve the world and only
 upgrade rules metadata at an `OPEN` or `COMMITTED` boundary; a Tick already
 `LOCKED` or `RESOLVING` must finish under its old rules first.
@@ -540,25 +541,30 @@ The Vanguard-specific action is `SWEEP` with one cardinal `direction`.
 
 ### Ranger
 
-The Ranger-specific action is `SHOOT` with `target_id` and `expected_cell`.
+The Ranger-specific action remains `SHOOT`. It always has `expected_cell` and
+may optionally include `target_id` for backward-compatible precision fire.
 
-A shot succeeds only when:
+A cell shot succeeds only when:
 
-1. the target is an enemy Unit or Core;
-2. the target is still at `expected_cell`;
-3. Ranger and target share a horizontal, vertical, or exact 45-degree diagonal line;
-4. distance along that line is 1, 2, or 3 — relative offset `(3, 3)` is range 3, while `(2, 1)` is not aligned;
-5. no intermediate cell contains an obstacle.
+1. Ranger and `expected_cell` share a horizontal, vertical, or exact 45-degree
+   diagonal line;
+2. distance along that line is 1, 2, or 3 — relative offset `(3, 3)` is range
+   3, while `(2, 1)` is not aligned;
+3. no intermediate cell contains an obstacle.
 
-Units and Cores never block Ranger fire, regardless of owner. An object
-colocated in the target cell does not block the shot to the selected `target_id`;
+Movement resolves first. The server selects the lowest-HP hostile then in the
+cell, breaking HP ties by raw UUID order. An empty cell produces the ordinary
+`SHOT_MISSED`. Units and Cores never block Ranger fire, regardless of owner;
 there is no front-to-back ordering inside one cell. For diagonal fire, only the
 intermediate diagonal cells are checked; obstacles beside the line do not block it.
 
-The command endpoint intentionally accepts an unseen or nonexistent target UUID
-so it cannot be used as a fog-of-war oracle. At resolution, a missing target,
-friendly target, moved target, non-aligned or out-of-range target, and blocked
-line all produce the same private `SHOT_MISSED` result.
+When `target_id` is present, precision mode hits only that object if it remains
+hostile and at `expected_cell`; it never retargets another occupant. The command
+endpoint intentionally accepts an unseen or nonexistent target UUID so it cannot
+be used as a fog-of-war oracle. At resolution, an empty cell, a missing, friendly,
+or moved precision target, invalid range, and a blocked line all produce the same
+private `SHOT_MISSED` result. A cell-shot miss omits `target_id`; a hit reports
+the object actually selected by the server.
 
 An action may contain only the fields allowed for its type. An unrelated field,
 including `null`, rejects the entire plan with `UNEXPECTED_ACTION_FIELDS`.
@@ -677,9 +683,11 @@ for 1. Multiple sweeps add.
 
 ### Ranger damage
 
-`SHOOT` damages one selected enemy object for 1 when all targeting and line rules
-remain valid in the combat snapshot. Only obstacles in intermediate shot cells
-block the shot. Units, Cores, and obstacles beside a diagonal never do.
+`SHOOT` damages one enemy object for 1 when the target-cell and line rules remain
+valid in the combat snapshot. Without `target_id`, the lowest-HP hostile in the
+cell is selected after movement, with raw UUID order breaking ties. With
+`target_id`, only that precise object can be hit. Only obstacles in intermediate
+shot cells block the shot. Units, Cores, and obstacles beside a diagonal never do.
 
 ### Core damage and fleet removal
 
@@ -788,8 +796,8 @@ Static validation occurs before persistence and includes:
 One static problem atomically rejects the whole request and leaves the previous
 valid plan unchanged.
 
-Dynamic facts resolve later, including moved targets, full destinations,
-contested movement, insufficient resources, Beacon UUID tie-breaking,
+Dynamic facts resolve later, including empty firing cells, moved precision
+targets, full destinations, contested movement, insufficient resources, Beacon UUID tie-breaking,
 same-node harvest contention or depletion, and blocked Ranger lines. These do
 not reject the POST; they fail during Tick resolution.
 

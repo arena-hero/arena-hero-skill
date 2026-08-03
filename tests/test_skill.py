@@ -104,13 +104,14 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
-    assert "arena-hero==0.2.6" in readme
-    assert "arena-hero>=0.2.7,<0.3" in tactic_authoring
-    assert "arena-hero>=0.2.7,<0.3" in direct_play
-    assert workflow.count("arena-hero==0.2.6") == 2
+    assert "arena-hero==0.2.8" in readme
+    assert "arena-hero>=0.2.8,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.8,<0.3" in direct_play
+    assert workflow.count("arena-hero==0.2.8") == 2
     assert "CoreResourceCapture" in arena_hero.__all__
     assert "HealAction" in arena_hero.__all__
     assert "HealingResult" in arena_hero.__all__
+    assert hasattr(arena_hero.Ranger, "shoot_cell")
 
 
 def test_agent_metadata_matches_skill() -> None:
@@ -133,14 +134,17 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "current v0.12 rules for eight-direction Ranger fire" in normalized
+    assert (
+        "current v0.13 rules for target-free eight-direction Ranger cell fire"
+        in normalized
+    )
     assert "unpaid-upkeep damage to excess Units" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
-    assert "PyPI still publishes v0.2.6" in normalized
-    assert "Core self-destruction" in normalized
+    assert "Python SDK v0.2.8" in normalized
+    assert "Core self-destruct" in normalized
 
 
 def test_bundled_rules_cover_complete_gameplay_contract() -> None:
@@ -184,6 +188,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "Ranger | 2 | 5 | 12",
         "exact 45-degree diagonal",
         "`(3, 3)` is range 3",
+        "lowest-HP hostile",
+        "cell-shot miss omits `target_id`",
         "obstacles beside the line do not block it",
         "at most two occupying entities",
         "Manual explicit action > Agent explicit action > WAIT",
@@ -320,14 +326,14 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-changelog.md": {
             "# Changelog",
-            "Gameplay rules v0.12",
+            "Gameplay rules v0.13",
             "Python SDK releases",
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.12",
+            "Gameplay rules | v0.13",
             "Python SDK",
-            "v0.2.7",
+            "v0.2.8",
             "Reviewed server commit",
         },
     }
@@ -362,6 +368,9 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert {
         item["$ref"] for item in openapi["components"]["schemas"]["CoreAction"]["oneOf"]
     } >= {"#/components/schemas/SelfDestructAction"}
+    openapi_shoot = openapi["components"]["schemas"]["ShootAction"]
+    assert openapi_shoot["required"] == ["type", "expected_cell"]
+    assert "lowest-HP hostile" in openapi_shoot["description"]
 
     assert asyncapi["asyncapi"] == "3.1.0"
     assert asyncapi["channels"]["gameStream"]
@@ -384,6 +393,8 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
         "#/components/schemas/SelfDestructAction"
     }
     assert schemas["HealAction"]["properties"]["type"]["const"] == "HEAL"
+    assert schemas["ShootAction"]["required"] == ["type", "expected_cell"]
+    assert "lowest-HP hostile" in schemas["ShootAction"]["description"]
     for event_type in {
         "UNIT_HEAL_SUCCEEDED",
         "UNIT_HEAL_FAILED",

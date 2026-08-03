@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `880e3a3869300053c8a99092b7495ba4a97f2c0e`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `e32ff948b7ee05fa932a1305eef164bc45fc2986`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -216,6 +216,10 @@ for vanguard in turn.vanguards:
 for ranger in turn.rangers:
     if turn.visible_enemies:
         ranger.shoot(turn.visible_enemies[0])
+    else:
+        # Cell fire needs no visible target; movement resolves before the shot.
+        x, y = ranger.position
+        ranger.shoot_cell((x + 1, y))
 
 if turn.core is not None:
     turn.core.spawn(UnitType.WORKER)

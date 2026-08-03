@@ -77,9 +77,9 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "nearest 19",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.12",
+        "Gameplay rules | v0.13",
         "Python SDK",
-        "v0.2.7",
+        "v0.2.8",
     ),
     "static/openapi.yaml": ("HEAL", "RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
@@ -94,6 +94,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
 
 SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/quickstart.md": (
+        "ranger.shoot_cell",
         "turn.core.self_destruct()",
         "unit.heal()",
         "RESOURCE_DEPLETED",
@@ -104,6 +105,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "UPKEEP_DEFICIT",
     ),
     "docs/api-reference.md": (
+        "shoot_cell(expected_cell)",
         "self_destruct()",
         "HealAction",
         "HealingResult",

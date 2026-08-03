@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -9,11 +9,11 @@
 | Item | Value |
 |---|---|
 | HTTP and WebSocket API | v0.1 |
-| Gameplay rules | v0.12 |
+| Gameplay rules | v0.13 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `bdd68e86c778cf973452fecd5cb6a4bcf091ad45` |
-| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.7 source (PyPI v0.2.6) |
-| Reviewed SDK commit | `880e3a3869300053c8a99092b7495ba4a97f2c0e` |
+| Reviewed server commit | `57c2a5b2c070c808092ddcf5425d0c87773fc6e2` |
+| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.8 source and PyPI release |
+| Reviewed SDK commit | `e32ff948b7ee05fa932a1305eef164bc45fc2986` |
 | Server review date | 3 August 2026 |
 | SDK review date | 3 August 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
@@ -57,6 +57,8 @@ explicit contract-version decision:
   of Core healing, shield repair, and spawning after combat;
 - the Ranger eight-direction line-of-fire geometry and the rule that only
   obstacles on intermediate shot cells block shots;
+- target-free Ranger cell shots and deterministic lowest-HP/raw-UUID target
+  selection after movement;
 - the same-Tick Core respawn attempt and retry-only `RESPAWNING` state;
 - core balance rules that determine replayed outcomes.
 
@@ -65,7 +67,7 @@ in — can improve freely, because none of it changes the game contract.
 
 ## Why there is no version picker yet
 
-The public API remains v0.1 and the current gameplay rules are v0.12, so this site
+The public API remains v0.1 and the current gameplay rules are v0.13, so this site
 publishes exactly one current version in English and Simplified Chinese. Once
 there is a first stable compatibility release, older contracts can be kept
 around as Docusaurus versions.

@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 418953c4655fb7162a06fa508673263c4c1d0bf4: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision 03a945270b74c53b26cb52f2295a052f7e88c015: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -555,7 +555,11 @@ components:
     ShootAction:
       type: object
       additionalProperties: false
-      required: [type, target_id, expected_cell]
+      description: |
+        Fires at expected_cell after movement. Without target_id, hits the
+        lowest-HP hostile in that cell, breaking ties by raw UUID order. With
+        target_id, keeps backward-compatible precision-target behavior.
+      required: [type, expected_cell]
       properties:
         type:
           const: SHOOT

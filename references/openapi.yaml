@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 418953c4655fb7162a06fa508673263c4c1d0bf4: static/openapi.yaml.
+# Bundled from arena-hero-doc revision 03a945270b74c53b26cb52f2295a052f7e88c015: static/openapi.yaml.
 openapi: 3.1.0
 info:
   title: Arena Hero Game HTTP API
@@ -87,7 +87,6 @@ paths:
                   unit_actions:
                     9d3e4941-2816-4a39-a220-df8cd95e877d:
                       type: SHOOT
-                      target_id: 175f47f4-f7de-4785-b45c-9a2d2289a8ea
                       expected_cell: [120, 85]
                   core_action:
                     type: SPAWN
@@ -348,7 +347,11 @@ components:
     ShootAction:
       type: object
       additionalProperties: false
-      required: [type, target_id, expected_cell]
+      description: |
+        Fires at expected_cell after movement. Without target_id, hits the
+        lowest-HP hostile in that cell, breaking ties by raw UUID order. With
+        target_id, keeps backward-compatible precision-target behavior.
+      required: [type, expected_cell]
       properties:
         type:
           const: SHOOT

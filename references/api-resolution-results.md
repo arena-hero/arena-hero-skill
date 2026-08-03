@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -121,7 +121,7 @@ increment `resources_harvested` or `beacon_bonus_resources_harvested`.
 | `event_type` | `reason_code` | IDs and position | `values` | Meaning |
 |---|---|---|---|---|
 | `SWEEP_RESOLVED` | absent | `actor_id`: Vanguard; `position`: swept adjacent cell | `{targets_hit: int}` | Sweep resolved; `0` is a valid result. |
-| `SHOT_MISSED` | always `SHOT_MISSED` | `actor_id`: Ranger; `target_id`: requested UUID; `position`: submitted `expected_cell` | absent | Shot failed dynamically. The detailed cause is intentionally hidden. |
+| `SHOT_MISSED` | always `SHOT_MISSED` | `actor_id`: Ranger; optional `target_id`: requested precision UUID; `position`: submitted `expected_cell` | absent | Shot failed dynamically. A cell-shot miss has no `target_id`; the detailed cause is intentionally hidden. |
 | `SHOT_HIT` | absent | `actor_id`: Ranger; `target_id`: hit Core or Unit; `position`: target cell | `{damage: int}` | Valid shot contributed damage. |
 | `UNIT_DAMAGED` | `ATTACK` or `UPKEEP_DEFICIT` | `target_id`: damaged Unit; `position`: Unit cell | `{damage: int, hp: int}` | Damage and HP afterward, clamped to `0`. `ATTACK` is simultaneous combat damage. `UPKEEP_DEFICIT` is concentrated pre-action damage to a farthest excess Unit. `hp: 0` means the Unit was destroyed. |
 | `DESTRUCTION_PARTICIPATION` | `UNIT` or `CORE` | `target_id`: destroyed object; `position`: destruction cell | absent | This player contributed at least one damage to the destroyed object. |
@@ -136,9 +136,10 @@ bytes. An upkeep death happens before movement or combat, drops Worker cargo and
 a carried Beacon, and grants no `DESTRUCTION_PARTICIPATION`. A survivor can
 still act later in that Tick.
 
-Every dynamic Ranger failure carries the same `SHOT_MISSED` reason — a missing or
-moved target, a friendly target, bad range, an obstacle-blocked line, all of them. The
-result is designed to reveal nothing about hidden state.
+Every dynamic Ranger failure carries the same `SHOT_MISSED` reason — an empty
+cell, a missing or moved precision target, bad range, or an obstacle-blocked
+line. A successful cell shot reports the server-selected object in
+`SHOT_HIT.target_id`.
 
 ## Movement events
 
