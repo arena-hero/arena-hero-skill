@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/reference/source-and-version.md`.
+> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/reference/source-and-version.md`.
 
 # Source and version policy
 
@@ -9,13 +9,13 @@
 | Item | Value |
 |---|---|
 | HTTP and WebSocket API | v0.1 |
-| Gameplay rules | v0.11 |
+| Gameplay rules | v0.12 |
 | Server repository | [`arena-hero/arena-hero`](https://github.com/arena-hero/arena-hero) |
-| Reviewed server commit | `83ae972099ad99c21cbc15c1beaf4a4e3ca724d9` |
-| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.6 |
-| Reviewed SDK commit | `8f967aabad8798580e8c9f20bde0f082a8914c47` |
-| Server review date | 2 August 2026 |
-| SDK review date | 2 August 2026 |
+| Reviewed server commit | `bdd68e86c778cf973452fecd5cb6a4bcf091ad45` |
+| Python SDK | [`arena-hero/arena-hero-python`](https://github.com/arena-hero/arena-hero-python), v0.2.7 source (PyPI v0.2.6) |
+| Reviewed SDK commit | `880e3a3869300053c8a99092b7495ba4a97f2c0e` |
+| Server review date | 3 August 2026 |
+| SDK review date | 3 August 2026 |
 | Documentation repository | [`arena-hero/arena-hero-doc`](https://github.com/arena-hero/arena-hero-doc) |
 | Languages | English, Simplified Chinese |
 
@@ -51,6 +51,8 @@ explicit contract-version decision:
 - unpaid upkeep damaging farthest excess Units while protecting the nearest 19,
   without damaging the Core;
 - combat Core-loot winner selection, same-Tick mutual destruction, and capacity overflow destruction;
+- unconditional Core self-destruction after combat, including moving-Core
+  behavior, fleet removal, drops, attribution, and immediate respawn;
 - post-combat Unit/Core healing, Unit-first resource priority, and the placement
   of Core healing, shield repair, and spawning after combat;
 - the Ranger eight-direction line-of-fire geometry and the rule that only
@@ -63,7 +65,7 @@ in — can improve freely, because none of it changes the game contract.
 
 ## Why there is no version picker yet
 
-The public API remains v0.1 and the current gameplay rules are v0.11, so this site
+The public API remains v0.1 and the current gameplay rules are v0.12, so this site
 publishes exactly one current version in English and Simplified Chinese. Once
 there is a first stable compatibility release, older contracts can be kept
 around as Docusaurus versions.

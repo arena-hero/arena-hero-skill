@@ -1,10 +1,10 @@
-# Arena Hero v0.11 game rules
+# Arena Hero v0.12 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`83ae972099ad99c21cbc15c1beaf4a4e3ca724d9` on 2 August 2026.
+`bdd68e86c778cf973452fecd5cb6a4bcf091ad45` on 3 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -131,7 +131,8 @@ preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
 inventory above the resulting capacity during resolution. The v0.8
 diagonal-fire, v0.9 Core-resource-capture, v0.10 post-combat HP-recovery, and
-v0.11 excess-Unit upkeep-damage releases also preserve the world and only
+v0.11 excess-Unit upkeep-damage and v0.12 Core-self-destruct releases also
+preserve the world and only
 upgrade rules metadata at an `OPEN` or `COMMITTED` boundary; a Tick already
 `LOCKED` or `RESOLVING` must finish under its old rules first.
 
@@ -184,16 +185,19 @@ The following order is part of the rule contract:
     Core, transfer what fits to its highest-damage attacker's surviving Core;
     destroy overflow, then remove the destroyed Core and its fleet. Finally,
     destroy any remaining inventory above capacity reduced by combat.
-11. Resolve surviving Unit `HEAL` actions in ascending raw UUID byte order.
-12. Resolve each surviving stationary Core's `HEAL`, `REPAIR_SHIELD`, or
+11. Resolve `SELF_DESTRUCT` for every Core that survived combat. Destroy its
+    inventory and fleet, and drop Worker cargo and the Beacon at their actual
+    positions.
+12. Resolve surviving Unit `HEAL` actions in ascending raw UUID byte order.
+13. Resolve each remaining stationary Core's `HEAL`, `REPAIR_SHIELD`, or
     `SPAWN` action. These actions may spend resources captured in step 10.
-13. Immediately attempt to respawn newly destroyed Cores and process any
+14. Immediately attempt to respawn newly destroyed Cores and process any
     previously delayed spawn retries.
-14. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
+15. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
     its current quota using the post-settlement world.
-15. Atomically commit the world, dynamic resources, results, statistics, journal, and new
+16. Atomically commit the world, dynamic resources, results, statistics, journal, and new
     clock.
-16. Announce the next Tick and publish fresh private states.
+17. Announce the next Tick and publish fresh private states.
 
 ### Atomicity, determinism, and recovery
 
@@ -305,7 +309,31 @@ A plan may specify at most one Core action:
 - `CANCEL_MOVE`;
 - `PICKUP_BEACON`;
 - `DROP_BEACON`;
+- `SELF_DESTRUCT`;
 - `WAIT`.
+
+### Core self-destruct
+
+Any living Core may submit `{"type":"SELF_DESTRUCT"}` with no other fields.
+It has no resource, Unit, movement-state, or cooldown restriction. A migrating
+Core advances or completes its movement first, still pays upkeep, and remains
+attackable during the Tick.
+
+Combat has priority. If an enemy attack destroys the Core, normal destruction
+participation and resource capture apply and the self-destruct does not run. If
+the Core survives combat, it self-destructs before Unit healing, Core healing,
+shield repair, or spawning:
+
+- the Core inventory is destroyed without refund or transfer;
+- every owned Unit is removed and increments `units_lost`;
+- Worker cargo and a carried Beacon drop at each carrier's actual post-movement
+  position;
+- no damage, destruction participation, or loot is awarded;
+- the normal same-Tick respawn attempt runs and increments `respawn_count`.
+
+The private `CORE_DESTROYED` event uses reason `SELF_DESTRUCT`, omits
+`destroyed_by`, and is followed by `CORE_RESPAWNED` when placement succeeds.
+The replacement Core may self-destruct again on the next Tick.
 
 ### Production
 
@@ -376,7 +404,7 @@ next Tick           -> real movement attempt
 - Migration progresses without resubmitting an action. `WAIT` does not pause it.
 - Changing direction requires `CANCEL_MOVE`, which resets progress to zero.
 - While migrating, the Core cannot spawn, heal, repair, pick up or drop the Beacon,
-  or receive Worker deposits.
+  or receive Worker deposits, but it may `SELF_DESTRUCT`.
 - It still pays upkeep, takes damage, and retains its resource inventory.
 - Colocated Units do not move with it.
 - A carried Beacon remains at the Core's current logical position until the real
@@ -415,7 +443,7 @@ upkeep = tier x (tier + 1) / 2
 | 80-99 | 4 | 10 |
 | 100-119 | 5 | 15 |
 
-`SELF_DESTRUCT` resolves first. Upkeep is automatic, uses no Core action, and
+Unit `SELF_DESTRUCT` resolves first. Upkeep is automatic, uses no Core action, and
 uses the remaining population. A newly spawned Unit starts paying on the next
 Tick; a Unit killed later in the Tick has already paid for this one.
 
@@ -630,8 +658,8 @@ recovery, shield repair, and production.
 4. It applies all damage simultaneously.
 5. It removes dead Units and destroyed Cores only afterward.
 
-After removal, surviving Units heal first. The surviving Core may then heal,
-repair shield, or spawn. A repaired shield cannot absorb damage from the Tick
+After combat removal, a surviving Core first resolves `SELF_DESTRUCT`. Surviving
+Units then heal, and each remaining Core may heal, repair shield, or spawn. A repaired shield cannot absorb damage from the Tick
 that just ended, a newly spawned Unit cannot be attacked during its birth Tick,
 and fatal damage cannot be healed.
 
@@ -639,7 +667,7 @@ An object killed during combat still performs a legal attack locked against the
 snapshot. Mutual destruction is valid. Request order, completion order, database
 row order, and Manual versus Agent source grant no initiative.
 
-v0.11 has no random damage, dodge, critical hits, armor, automatic retaliation,
+The current rules have no random damage, dodge, critical hits, armor, automatic retaliation,
 stamina, levels, or equipment.
 
 ### Vanguard damage
@@ -663,11 +691,13 @@ ownership is decided separately by total damage to that Core, never input order.
 
 ## Core destruction and respawn
 
-When Core HP reaches zero:
+When Core HP reaches zero in combat, or a surviving Core resolves
+`SELF_DESTRUCT`:
 
 - the Core is removed;
 - when combat caused the destruction, its inventory is offered to the player
-  who dealt the most damage to that Core during this Tick;
+  who dealt the most damage to that Core during this Tick; self-destruction
+  destroys it;
 - every Unit belonging to that player is removed;
 - cargo carried by those Workers remains on each final cell;
 - locked actions for those objects no longer matter;
@@ -683,7 +713,7 @@ overflow is destroyed.
 
 If the winner's Core also dies in that combat Tick, the victim's entire
 inventory is destroyed. It does not enter the winner's replacement Core or pass
-to the runner-up. Upkeep cannot destroy a Core under v0.11. When several Cores
+to the runner-up. Upkeep cannot destroy a Core under the current rules. When several Cores
 die in one Tick, victims resolve by raw player UUID order, so earlier captures
 consume capacity before later ones.
 
@@ -692,6 +722,11 @@ A surviving winner receives `CORE_RESOURCES_CAPTURED` with
 amount actually stored, `available` is the victim's pre-destruction inventory,
 and `destroyed` is the part that did not fit. The event is still emitted with
 `amount: 0` when the winner's Core is already full.
+
+Combat destruction takes priority over a queued Core self-destruct. A
+self-destroyed Core grants no attack damage, destruction participation, or
+inventory capture. Its private `CORE_DESTROYED` event has reason
+`SELF_DESTRUCT` and no `destroyed_by`; combat destruction uses reason `ATTACK`.
 
 There is no respawn cooldown. The deterministic resolver attempts to place a
 replacement Core and Worker later in the same resolution Tick. Under normal

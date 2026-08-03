@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/reference/changelog.md`.
+> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/reference/changelog.md`.
 
 # Changelog
 
@@ -13,7 +13,55 @@ Gameplay rule versions are independent from the Python SDK version. The public
 HTTP and WebSocket API is still v0.1. For the exact currently reviewed source,
 see [Source and version policy](reference-source-and-version.md).
 
+## 3 August 2026
+
+### Gameplay rules v0.12 — unconditional Core self-destruction
+
+- Every living Core can submit `{"type":"SELF_DESTRUCT"}` with no resource,
+  Unit, movement-state, or cooldown restriction.
+- Movement and combat resolve first. A lethal enemy attack keeps normal
+  destruction participation and resource capture; otherwise the surviving Core
+  destroys its inventory and all owned Units before healing, repair, or spawn.
+- Worker cargo and the Champion Beacon drop at each carrier's actual position.
+  Core self-destruction awards no damage, destruction participation, or loot.
+- The private `CORE_DESTROYED` result uses `reason_code: SELF_DESTRUCT` without
+  `destroyed_by`, then follows the normal same-Tick respawn flow.
+- Both web clients add a destructive Core action with confirmation and dedicated
+  Tick-result/respawn feedback.
+- Python SDK v0.2.7 source adds `core.self_destruct()` and accepts
+  `SelfDestructAction` as a strict Core action. PyPI remains on v0.2.6 until a
+  separate package release.
+
+This adds a new strict `core_action.type` enum value while keeping HTTP and
+WebSocket API v0.1. Clients with a closed Core-action union must update before
+parsing a canonical `received.plan` containing this action.
+
+Source: [server `bdd68e8`](https://github.com/arena-hero/arena-hero/commit/bdd68e86c778cf973452fecd5cb6a4bcf091ad45),
+[frontend `9d2d553`](https://github.com/arena-hero/arena-hero-web/commit/9d2d5534dae9e9bf170436f7fce90fe79ddce5f1),
+and [SDK `880e3a3`](https://github.com/arena-hero/arena-hero-python/commit/880e3a3869300053c8a99092b7495ba4a97f2c0e).
+
 ## 2 August 2026
+
+### Official web client — aimed cell attacks
+
+- Vanguard manual controls now allow any adjacent cell to be selected, including
+  an empty cell an enemy may enter during resolution.
+- Ranger manual controls now select a highlighted firing cell. The client keeps
+  the existing `target_id` plus `expected_cell` protocol and automatically picks
+  the lowest-HP visible enemy already in that cell, or the lowest-HP enemy one
+  move away when predicting movement into an empty cell.
+- This is a web-client and tutorial improvement. Server combat rules and command
+  JSON are unchanged.
+
+### Public lifetime leaderboards
+
+- Added one public leaderboard endpoint and web page for exactly three lifetime
+  statistics: Champion Beacon Ticks held, damage dealt, and Core destruction
+  participations.
+- Each board shows the top 100 non-zero scores. Equal scores share a competition
+  rank, with username order keeping ties stable.
+- Only public usernames, ranks, and scores are exposed. Private statistics,
+  email addresses, and internal user IDs remain private.
 
 ### Gameplay rules v0.11 — unpaid upkeep damages excess Units
 
@@ -27,11 +75,14 @@ see [Source and version policy](reference-source-and-version.md).
   surviving damaged Unit may still act and heal later in the Tick.
 - `UPKEEP_PAID` continues to report `due`, `paid`, and `deficit`.
   `UNIT_DAMAGED` / `UPKEEP_DEFICIT` reports the affected Unit, damage, and HP.
-- The frontend now explains upkeep damage and destruction in Tick results. The
-  Python SDK documentation shows how to read the forward-compatible event.
+- The frontend explains upkeep damage and destruction in Tick results. It also
+  warns when the next Tick's upkeep exceeds current Core resources, showing the
+  exact shortfall and which Units are at risk. The Python SDK documentation
+  shows how to read the forward-compatible event.
 
 Source: [server `83ae972`](https://github.com/arena-hero/arena-hero/commit/83ae972099ad99c21cbc15c1beaf4a4e3ca724d9),
-[frontend `0a673f1`](https://github.com/arena-hero/arena-hero-web/commit/0a673f1011c7a3cda393b75e0e8bd9012da4ef7c),
+[frontend Tick results `0a673f1`](https://github.com/arena-hero/arena-hero-web/commit/0a673f1011c7a3cda393b75e0e8bd9012da4ef7c),
+[frontend warning `4d2808c`](https://github.com/arena-hero/arena-hero-web/commit/4d2808cea3c2e4f7fdee4b7939ff0fbd22ace5e3),
 and [SDK `8f967aa`](https://github.com/arena-hero/arena-hero-python/commit/8f967aabad8798580e8c9f20bde0f082a8914c47).
 
 ### Gameplay rules v0.10 — post-combat HP recovery
@@ -209,6 +260,7 @@ SDK versions are separate from gameplay rule versions.
 
 | Version | Date | Developer-visible change |
 |---|---|---|
+| 0.2.7 source | 3 Aug 2026 | Adds `core.self_destruct()` and accepts strict `SelfDestructAction` plans for Cores; committed but not yet published to PyPI. |
 | 0.2.6 | 2 Aug 2026 | PyPI release adding Unit/Core healing, typed `HealingResult`, and the `CoreResourceCapture` model from the unreleased 0.2.5 source. |
 | 0.2.5 source | 1 Aug 2026 | Adds typed `CoreResourceCapture`; committed but not yet published to PyPI. |
 | 0.2.4 | 30 Jul 2026 | Adds the minimum Core-capacity contract and release metadata. |

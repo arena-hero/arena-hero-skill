@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `8f967aabad8798580e8c9f20bde0f082a8914c47`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `880e3a3869300053c8a99092b7495ba4a97f2c0e`: `docs/api-reference.md`.
 
 # API reference
 
@@ -333,10 +333,19 @@ The `Core` controller exposes:
 | `cancel_move()` | Cancel current Core movement. |
 | `pickup_beacon()` | Pick up the Beacon on the current cell. |
 | `drop_beacon()` | Drop a carried Beacon. |
+| `self_destruct()` | Destroy the Core, its inventory, and all owned Units after combat, then enter the normal respawn flow. |
 | `wait()` | Queue an explicit `WAIT`. |
 | `clear_action()` | Remove the queued Core action. |
 
 The Core has one action slot. A later method call replaces the earlier action.
+
+Core self-destruction has no resource, Unit, movement-state, or cooldown
+restriction. Movement and combat resolve first. If combat destroys the Core,
+normal attack credit and resource capture take precedence. Otherwise the Core
+inventory and army are destroyed, Worker cargo and the Champion Beacon drop at
+their actual positions, and the server immediately attempts the normal
+replacement Core and Worker spawn. No player receives destruction credit or
+loot for a Core self-destruct.
 
 Both Unit and Core healing cost one Core resource per HP actually recovered and
 automatically spend enough to reach full HP when possible. Unit healing
@@ -568,6 +577,7 @@ does not merge it with an earlier plan.
 | `CancelMoveAction` | none |
 | `PickupBeaconAction` | none |
 | `DropBeaconAction` | none |
+| `SelfDestructAction` | none |
 
 ## Enums
 

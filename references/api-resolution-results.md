@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/api/resolution-results.md`.
+> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/api/resolution-results.md`.
 
 # Resolution results
 
@@ -23,6 +23,7 @@ Start from `event_type`, then read the fields listed for that event:
 | Looking for | Go to |
 |---|---|
 | Unit self-destruction | [Unit lifecycle events](#unit-lifecycle-events) |
+| Core self-destruction | [Economy and Core events](#economy-and-core-events) |
 | HP recovery | [Healing events](#healing-events) |
 | Upkeep, Core damage, repair, or spawning | [Economy and Core events](#economy-and-core-events) |
 | Harvesting or depositing | [Worker events](#worker-events) |
@@ -75,7 +76,7 @@ produces no heal event and spends no resource. `unit_hp_recovered` and
 |---|---|---|---|---|
 | `UPKEEP_PAID` | absent | `actor_id`: Core; `position`: Core cell | `{due: int, paid: int, deficit: int}` | Upkeep was collected. A positive `deficit` is then applied to excess Units, never the Core. |
 | `CORE_DAMAGED` | `ATTACK` | `target_id`: Core; `position`: Core cell | `{damage: int, shield_damage: int, hp_damage: int}` | Total combat damage and how it was split between shield and HP. |
-| `CORE_DESTROYED` | `ATTACK` | `target_id`: destroyed Core; `position`: destruction cell | `{destroyed_by: string[]}` when participants can be named; otherwise absent | The player's Core and remaining Units were removed. A replacement spawn is attempted later in the same Tick. |
+| `CORE_DESTROYED` | `ATTACK` or `SELF_DESTRUCT` | `target_id`: destroyed Core; `position`: destruction cell | For `ATTACK`, `{destroyed_by: string[]}` when participants can be named; absent for `SELF_DESTRUCT` | The player's Core and remaining Units were removed. A replacement spawn is attempted later in the same Tick. |
 | `CORE_RESOURCE_OVERFLOW_DESTROYED` | absent | `actor_id`: Core; `position`: Core cell | `{amount: int, capacity: int}` | Population fell and resources above the new capacity were destroyed. |
 | `CORE_RESOURCES_CAPTURED` | absent | `actor_id`: winner's surviving Core; `target_id`: destroyed Core; `position`: destruction cell | `{amount: int, available: int, destroyed: int, capacity: int}` | The highest-damage player stored `amount` from the victim's `available` inventory; `destroyed` did not fit. `amount` may be zero. No event is emitted if the winner's Core also died. |
 | `CORE_ACTION_FAILED` | `CORE_NOT_MOVING` or `CORE_ALREADY_MOVING` | `actor_id`: Core; `position`: Core cell | absent | `CANCEL_MOVE` was used on a normal Core, or an incompatible Core action was used during migration. |
@@ -87,7 +88,9 @@ produces no heal event and spends no resource. `unit_hp_recovered` and
 | `CORE_SPAWN_SUCCEEDED` | absent | `actor_id`: Core; `target_id`: new Unit; `position`: Core cell | `{unit_type: UnitType, cost: int}` | One Unit was created on the Core cell. |
 
 `destroyed_by` lists participant usernames in a deterministic order. You only see
-it for an attack, and only when at least one participant can be named.
+it for an attack, and only when at least one participant can be named. A
+`SELF_DESTRUCT` Core event has no attacker, damage, participation, or resource
+capture; combat destruction takes priority when both would apply.
 
 ## Worker events
 

@@ -1,10 +1,10 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709: static/openapi.yaml.
+# Bundled from arena-hero-doc revision 418953c4655fb7162a06fa508673263c4c1d0bf4: static/openapi.yaml.
 openapi: 3.1.0
 info:
   title: Arena Hero Game HTTP API
   version: 0.1.0
-  summary: Submit complete command plans for the current Arena Hero Tick.
+  summary: Submit command plans and read the public Arena Hero leaderboard.
   description: |
     The HTTP half of the Arena Hero game loop. Authoritative tick, state, and
     plan receipts are delivered through the WebSocket contract in asyncapi.yaml.
@@ -20,7 +20,40 @@ servers:
 tags:
   - name: Commands
     description: Replace the complete plan for one player, Tick, and source.
+  - name: Leaderboard
+    description: Read the three public lifetime rankings.
 paths:
+  /api/v1/leaderboard:
+    get:
+      tags: [Leaderboard]
+      operationId: getLeaderboard
+      summary: Read the public lifetime leaderboards
+      description: |
+        Returns exactly three rankings: Champion Beacon Ticks held, damage
+        dealt, and Core destruction participations. Each ranking contains at
+        most 100 players with a positive score. Equal scores share a rank, and
+        tied entries are ordered by username.
+      security: []
+      responses:
+        '200':
+          description: The three public lifetime rankings.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: public, max-age=15
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaderboardResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INTERNAL_ERROR
   /api/v1/game/commands:
     post:
       tags: [Commands]
@@ -196,6 +229,47 @@ components:
         pattern: '^[\x21-\x7e]+$'
       example: agent-10583-plan-01
   schemas:
+    LeaderboardEntry:
+      type: object
+      additionalProperties: false
+      required: [rank, username, score]
+      properties:
+        rank:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Competition rank. Equal scores share a rank.
+        username:
+          type: string
+          minLength: 3
+          maxLength: 24
+          pattern: '^[a-z0-9_]+$'
+          description: Public Arena Hero username without an @ prefix.
+        score:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Positive lifetime total for the containing ranking.
+    LeaderboardResponse:
+      type: object
+      additionalProperties: false
+      required: [beacon_ticks_held, damage_dealt, core_destruction_participations]
+      properties:
+        beacon_ticks_held:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/LeaderboardEntry'
+        damage_dealt:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/LeaderboardEntry'
+        core_destruction_participations:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/LeaderboardEntry'
     Position:
       type: array
       prefixItems:
@@ -300,8 +374,11 @@ components:
       type: object
       additionalProperties: false
       description: |
-        Removes the Unit before upkeep, without refund or area damage. A
-        Worker's cargo becomes a resource pile on its final cell.
+        For a Unit, removes it before upkeep without refund or area damage; a
+        Worker's cargo becomes a resource pile on its final cell. For a Core,
+        resolves after combat with no restrictions, destroys its inventory and
+        owned Units, drops cargo and the Beacon, and enters normal respawn
+        without awarding credit or loot.
       required: [type]
       properties:
         type:
@@ -387,6 +464,7 @@ components:
         - $ref: '#/components/schemas/CancelMoveAction'
         - $ref: '#/components/schemas/CorePickupBeaconAction'
         - $ref: '#/components/schemas/CoreDropBeaconAction'
+        - $ref: '#/components/schemas/SelfDestructAction'
         - $ref: '#/components/schemas/HealAction'
     CommandPlan:
       type: object

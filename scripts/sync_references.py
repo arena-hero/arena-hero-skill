@@ -16,6 +16,7 @@ DOC_FILES = {
     "docs/agent/quickstart.md": "agent-quickstart.md",
     "docs/agent/command-loop.md": "agent-command-loop.md",
     "docs/api/overview.md": "api-overview.md",
+    "docs/api/leaderboard.md": "api-leaderboard.md",
     "docs/api/websocket.md": "api-websocket.md",
     "docs/api/commands.md": "api-commands.md",
     "docs/api/state-model.md": "api-state-model.md",
@@ -47,6 +48,7 @@ LINK_ALIASES = {
 DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/api/commands.md": (
         "CORE_RESOURCE_FULL",
+        "A self-destruct",
         "exact 45-degree diagonal",
         "`HEAL`",
         "RESOURCE_DEPLETED",
@@ -55,6 +57,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     ),
     "docs/api/resolution-results.md": (
         "CORE_HEAL_SUCCEEDED",
+        "CORE_DESTROYED",
         "CORE_RESOURCES_CAPTURED",
         "CORE_RESOURCE_OVERFLOW_DESTROYED",
         "RESOURCE_DEPLETED",
@@ -74,9 +77,9 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "nearest 19",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.11",
+        "Gameplay rules | v0.12",
         "Python SDK",
-        "v0.2.6",
+        "v0.2.7",
     ),
     "static/openapi.yaml": ("HEAL", "RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
@@ -91,6 +94,7 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
 
 SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
     "docs/quickstart.md": (
+        "turn.core.self_destruct()",
         "unit.heal()",
         "RESOURCE_DEPLETED",
         "cargo piles left by dead Workers",
@@ -100,6 +104,7 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "UPKEEP_DEFICIT",
     ),
     "docs/api-reference.md": (
+        "self_destruct()",
         "HealAction",
         "HealingResult",
         "CORE_RESOURCES_CAPTURED",

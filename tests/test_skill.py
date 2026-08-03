@@ -23,6 +23,7 @@ BUNDLED_DOCUMENTATION = {
     "agent-quickstart.md",
     "agent-command-loop.md",
     "api-overview.md",
+    "api-leaderboard.md",
     "api-websocket.md",
     "api-commands.md",
     "api-state-model.md",
@@ -96,14 +97,16 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     assert "update the official SDK before" in skill
     assert "python -m pip install --upgrade --no-cache-dir arena-hero" in skill
     assert "Do not work around a mismatch by weakening SDK validation" in skill
+    assert "If the live contract is older than the bundle" in skill
+    assert "requires a newer SDK than PyPI publishes" in " ".join(skill.split())
 
     readme = (ROOT / "README.md").read_text()
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
     assert "arena-hero==0.2.6" in readme
-    assert "arena-hero>=0.2.6,<0.3" in tactic_authoring
-    assert "arena-hero>=0.2.6,<0.3" in direct_play
+    assert "arena-hero>=0.2.7,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.7,<0.3" in direct_play
     assert workflow.count("arena-hero==0.2.6") == 2
     assert "CoreResourceCapture" in arena_hero.__all__
     assert "HealAction" in arena_hero.__all__
@@ -130,12 +133,14 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/sdk-quickstart.md" in normalized
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
-    assert "current v0.11 rules for eight-direction Ranger fire" in normalized
+    assert "current v0.12 rules for eight-direction Ranger fire" in normalized
     assert "unpaid-upkeep damage to excess Units" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
+    assert "PyPI still publishes v0.2.6" in normalized
+    assert "Core self-destruction" in normalized
 
 
 def test_bundled_rules_cover_complete_gameplay_contract() -> None:
@@ -184,6 +189,9 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "Manual explicit action > Agent explicit action > WAIT",
         "64 new submissions",
         "There is no respawn cooldown",
+        "Any living Core may submit",
+        "Combat has priority",
+        "reason `SELF_DESTRUCT`",
         "Highest damage wins; tied damage uses the lower raw player UUID",
         "If the winner's Core also dies in that combat Tick",
         "Unit heals resolve in ascending raw UUID byte order",
@@ -221,6 +229,11 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "openapi.yaml",
             "asyncapi.yaml",
         },
+        "api-leaderboard.md": {
+            "# Leaderboard API",
+            "GET https://api.arenahero.io/api/v1/leaderboard",
+            "beacon_ticks_held",
+        },
         "api-websocket.md": {
             "# WebSocket",
             'type": "tick',
@@ -254,6 +267,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "RESPAWN_DELAYED",
             "RESOURCE_DEPLETED",
             "UNIT_SELF_DESTRUCTED",
+            "CORE_DESTROYED",
             "UNIT_HEAL_SUCCEEDED",
             "CORE_HEAL_FAILED",
             "WORKER_CARGO_DROPPED",
@@ -274,6 +288,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "RESOURCE_DEPLETED",
             "exact 45-degree diagonal",
             "UPKEEP_DEFICIT",
+            "turn.core.self_destruct()",
         },
         "sdk-reference.md": {
             "# API reference",
@@ -286,6 +301,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "HealingResult",
             "exact 45-degree diagonal",
             "UPKEEP_DEFICIT",
+            "self_destruct()",
         },
         "reference-numbers.md": {
             "# Rules at a glance",
@@ -304,14 +320,14 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-changelog.md": {
             "# Changelog",
-            "Gameplay rules v0.11",
+            "Gameplay rules v0.12",
             "Python SDK releases",
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.11",
+            "Gameplay rules | v0.12",
             "Python SDK",
-            "v0.2.6",
+            "v0.2.7",
             "Reviewed server commit",
         },
     }
@@ -343,6 +359,9 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
         ]
         == "SELF_DESTRUCT"
     )
+    assert {
+        item["$ref"] for item in openapi["components"]["schemas"]["CoreAction"]["oneOf"]
+    } >= {"#/components/schemas/SelfDestructAction"}
 
     assert asyncapi["asyncapi"] == "3.1.0"
     assert asyncapi["channels"]["gameStream"]
@@ -361,6 +380,9 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert schemas["SelfDestructAction"]["properties"]["type"]["const"] == (
         "SELF_DESTRUCT"
     )
+    assert {item["$ref"] for item in schemas["CoreAction"]["oneOf"]} >= {
+        "#/components/schemas/SelfDestructAction"
+    }
     assert schemas["HealAction"]["properties"]["type"]["const"] == "HEAL"
     for event_type in {
         "UNIT_HEAL_SUCCEEDED",

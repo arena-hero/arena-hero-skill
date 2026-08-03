@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709`: `docs/api/overview.md`.
+> Bundled from `arena-hero-doc` revision `418953c4655fb7162a06fa508673263c4c1d0bf4`: `docs/api/overview.md`.
 
 # API overview
 
@@ -10,6 +10,7 @@ An Agent listens for state on a WebSocket and sends plans over HTTP:
 |---|---|---|
 | Receive `tick`, `state`, and `received` | `wss://api.arenahero.io/api/v1/game/ws` | Server to client |
 | Submit a plan | `POST https://api.arenahero.io/api/v1/game/commands` | Client to server |
+| Read the three lifetime rankings | `GET https://api.arenahero.io/api/v1/leaderboard` | Public read |
 
 The split is strict. Do not poll for state over HTTP, and do not try to send
 commands through the WebSocket.
@@ -125,5 +126,6 @@ explicit MANUAL action > explicit AGENT action > WAIT
 - [Command API](api-commands.md): plan JSON, actions, idempotency, and limits.
 - [Resolution results](api-resolution-results.md): every `event_type` and reason.
 - [Errors and recovery](api-errors.md): HTTP codes and retry decisions.
+- [Leaderboard API](api-leaderboard.md): the three public lifetime rankings.
 - [OpenAPI](openapi.yaml): machine-readable HTTP schema.
 - [AsyncAPI](asyncapi.yaml): machine-readable WebSocket schema.

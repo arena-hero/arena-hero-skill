@@ -53,6 +53,7 @@ Read the files required by the task:
   [references/agent-command-loop.md](references/agent-command-loop.md). Read
   [references/api-overview.md](references/api-overview.md), then the complete
   local references for
+  [public leaderboards](references/api-leaderboard.md),
   [WebSocket](references/api-websocket.md),
   [commands](references/api-commands.md),
   [state models](references/api-state-model.md),
@@ -74,6 +75,11 @@ When network access is available, compare the bundled source/version policy with
 <https://doc.arenahero.io/reference/source-and-version>. If the live contract is
 newer or incompatible, stop rule-dependent work and report that this bundle
 must be updated. Never fill a version gap from memory.
+
+If the live contract is older than the bundle, treat the bundled change as
+unreleased source. Do not use its newer actions for direct play or claim the
+live server supports them; report the release mismatch and wait for the server,
+docs, and compatible official SDK to be published together.
 
 ## Establish current context
 
@@ -104,21 +110,28 @@ Before writing a tactic or submitting a plan:
    replacement Core and Worker later in the same Tick. A missing Core means
    initial admission or a retry after no legal spawn position was available;
    do not invent actions until a later authoritative Turn contains the Core.
-9. A combat-destroyed Core's inventory goes to the player who dealt the most
+9. A controlled Core may queue `turn.core.self_destruct()` without resource,
+   Unit, movement-state, or cooldown restrictions. Movement and combat resolve
+   first. A lethal enemy attack keeps normal attribution and loot; otherwise
+   the surviving Core destroys its inventory and fleet, drops Worker cargo and
+   the Beacon at actual positions, grants no credit or loot, and enters normal
+   same-Tick respawn. Read `CORE_DESTROYED/SELF_DESTRUCT`; do not invent an
+   attacker.
+10. A combat-destroyed Core's inventory goes to the player who dealt the most
    damage to that Core during the destruction Tick; tied damage uses raw player
    UUID order. The winner stores only what fits the post-combat
    `max(10, population * 5)` capacity and the rest is destroyed. If the
    winner's Core also dies in that combat Tick, all loot is destroyed. Read
    `CORE_RESOURCES_CAPTURED` or `event.core_resource_capture`; do not treat
    destruction participation as resource ownership.
-10. `HEAL` is a full post-combat action. A surviving Unit may heal only while
+11. `HEAL` is a full post-combat action. A surviving Unit may heal only while
     sharing a cell with its own stationary Core; the Core may also heal. Each
     restored HP costs 1 Core resource, and one action may restore several HP.
     Unit heals resolve in raw UUID order before the Core action. Fatal damage
     cannot be healed. A full-HP or currently unfunded heal may be queued in
     advance and fails privately without cost if it is still impossible. Read
     `event.healing` or the `UNIT_HEAL_*` and `CORE_HEAL_*` events for results.
-11. Upkeep spends available Core resources first. Any unpaid amount damages
+12. Upkeep spends available Core resources first. Any unpaid amount damages
     excess Units, never the Core. The nearest 19 Units are protected; order the
     rest by descending Manhattan distance from the current Core, then raw Unit
     UUID bytes. Damage is concentrated in that order. An upkeep death happens
@@ -141,6 +154,9 @@ backend state model is newer than the installed package.
    `python -c "import arena_hero; print(arena_hero.__version__)"`.
 2. When network access is available, compare it with the latest release on
    PyPI.
+   If the bundled source/version policy requires a newer SDK than PyPI
+   publishes, stop and report the release mismatch. Do not install the SDK from
+   Git or continue live play with an older strict client.
 3. Upgrade through the project's existing package manager. For `pip`, run
    `python -m pip install --upgrade --no-cache-dir arena-hero`.
 4. Restart the tactic or direct-play bridge and retry once.

@@ -23,18 +23,19 @@ The official guide is at
 
 ## Complete documentation included
 
-The repository carries Arena Hero API v0.1 and gameplay rules v0.11 locally, so
+The repository carries Arena Hero API v0.1 and gameplay rules v0.12 locally, so
 the Skill does not need the documentation site to reconstruct the contract:
 
 - complete gameplay rules and numeric reference;
 - raw Agent quickstart and reliable command loop;
 - HTTP command API and WebSocket protocol;
 - every state field, action, event, reason code, error, and retry rule;
-- the current v0.11 rules for eight-direction Ranger fire, self-destruct,
+- the current v0.12 rules for eight-direction Ranger fire, Unit and Core self-destruct,
   Worker cargo-drop, resource-node quota,
   strict `max(10, population × 5)` Core resource capacity, refill, visibility,
   contention, migration, Core resource capture, post-combat Unit/Core HP
-  recovery, unpaid-upkeep damage to excess Units, and the same-Tick respawn
+  recovery, unpaid-upkeep damage to excess Units, Core self-destruct attack
+  precedence and drops, and the same-Tick respawn
   contract;
 - complete Python SDK quickstart and API reference, including synchronous and
   asynchronous clients;
@@ -48,6 +49,11 @@ Start with [`references/game-rules.md`](references/game-rules.md) for gameplay,
 The bundled files record the documentation and SDK commits they came from.
 When online, the Skill still checks the official source/version policy before
 performing contract-sensitive work.
+
+The bundled contract currently tracks Python SDK v0.2.7 source, while PyPI
+still publishes v0.2.6. Core self-destruction and strict parsing of that Core
+action require v0.2.7. Until it is published, do not run this v0.12 Skill
+against a live server with the older SDK or recreate the missing model locally.
 
 ## Two modes
 
@@ -83,6 +89,9 @@ The page shows the current Agent plan. Manual actions from the web can override
 the corresponding Agent-controlled Unit or Core for that Tick.
 
 ## Development
+
+The command below validates the currently published v0.2.6 baseline; the
+repository's v0.2.7 source compatibility is validated before its PyPI release.
 
 ```bash
 uv run --python 3.11 \

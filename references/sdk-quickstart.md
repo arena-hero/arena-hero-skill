@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `8f967aabad8798580e8c9f20bde0f082a8914c47`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `880e3a3869300053c8a99092b7495ba4a97f2c0e`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -62,6 +62,13 @@ its own stationary Core. Unit heals use resources before the Core action, and
 fatal damage cannot be healed. You may queue healing while HP is full or the
 Core is currently empty because same-Tick damage and captured resources resolve
 first.
+
+Queue unconditional Core self-destruction with `turn.core.self_destruct()`.
+It remains valid while the Core is moving and has no resource, Unit, or
+cooldown requirement. Movement and combat resolve first. A lethal enemy attack
+keeps normal destruction credit and resource capture; otherwise the surviving
+Core destroys its inventory and army, drops carried resources and the Beacon,
+and immediately enters the normal respawn flow without awarding loot.
 
 The context manager closes the HTTP and WebSocket connections when the loop
 ends.

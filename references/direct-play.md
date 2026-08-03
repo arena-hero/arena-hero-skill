@@ -26,9 +26,12 @@ Use Python 3.11 or newer and a compatible official SDK. Prefer an isolated
 environment. With `uv`:
 
 ```bash
-uv run --python 3.11 --with 'arena-hero>=0.2.6,<0.3' \
+uv run --python 3.11 --with 'arena-hero>=0.2.7,<0.3' \
   python /absolute/path/to/arena-hero/scripts/direct_session.py
 ```
+
+Do not start direct play until the compatible SDK is available. An older strict
+client cannot safely parse a canonical Core `SELF_DESTRUCT` plan.
 
 The bridge reads `ARENA_HERO_API_KEY`, `.env`, or a file passed with
 `--api-key-file`. If none is available, an interactive run falls back to a

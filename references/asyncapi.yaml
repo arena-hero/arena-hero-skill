@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision d7c383f8c317b8c86d6c9ca8e9ac0c50c79d6709: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision 418953c4655fb7162a06fa508673263c4c1d0bf4: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -478,7 +478,9 @@ components:
         Event-specific reason_code, ID, position, and values rules are defined
         in /api/resolution-results. UPKEEP_PAID reports due, paid, and deficit.
         UNIT_DAMAGED with reason_code UPKEEP_DEFICIT reports damage and post-
-        damage HP for an excess Unit. Optional fields are omitted, never null.
+        damage HP for an excess Unit. CORE_DESTROYED uses reason_code ATTACK
+        with optional values.destroyed_by, or SELF_DESTRUCT without an attacker
+        or values. Optional fields are omitted, never null.
       required: [event_id, tick, event_type]
       properties:
         event_id:
@@ -579,8 +581,11 @@ components:
       type: object
       additionalProperties: false
       description: |
-        Removes the Unit before upkeep, without refund or area damage. A
-        Worker's cargo becomes a resource pile on its final cell.
+        For a Unit, removes it before upkeep without refund or area damage; a
+        Worker's cargo becomes a resource pile on its final cell. For a Core,
+        resolves after combat with no restrictions, destroys its inventory and
+        owned Units, drops cargo and the Beacon, and enters normal respawn
+        without awarding credit or loot.
       required: [type]
       properties:
         type:
@@ -658,6 +663,7 @@ components:
         - $ref: '#/components/schemas/CancelMoveAction'
         - $ref: '#/components/schemas/PickupBeaconAction'
         - $ref: '#/components/schemas/DropBeaconAction'
+        - $ref: '#/components/schemas/SelfDestructAction'
         - $ref: '#/components/schemas/HealAction'
     CommandPlan:
       type: object
