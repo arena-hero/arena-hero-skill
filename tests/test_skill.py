@@ -205,10 +205,10 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "nearest 19 Units",
         "UPKEEP_DEFICIT",
     }
-    for rule in required_rules:
-        assert rule in rules
-
     normalized_rules = " ".join(rules.split())
+    for rule in required_rules:
+        assert rule in normalized_rules
+
     assert (
         "Only obstacles in intermediate shot cells block the shot" in normalized_rules
     )

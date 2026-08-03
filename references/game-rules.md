@@ -548,8 +548,8 @@ A cell shot succeeds only when:
 
 1. Ranger and `expected_cell` share a horizontal, vertical, or exact 45-degree
    diagonal line;
-2. distance along that line is 1, 2, or 3 — relative offset `(3, 3)` is range
-   3, while `(2, 1)` is not aligned;
+2. distance along that line is 1, 2, or 3 — relative offset `(3, 3)` is range 3,
+   while `(2, 1)` is not aligned;
 3. no intermediate cell contains an obstacle.
 
 Movement resolves first. The server selects the lowest-HP hostile then in the
