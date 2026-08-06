@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/reference/changelog.md`.
+> Bundled from `arena-hero-doc` revision `838a8eb8406e82086ee5750ae39cd68b396d0786`: `docs/reference/changelog.md`.
 
 # Changelog
 
@@ -33,7 +33,7 @@ see [Source and version policy](reference-source-and-version.md).
 - Both official web clients remove maintenance warnings and results, and show
   dynamic prices from the current state. Same-Tick deaths can make the server
   charge less than that preview.
-- Python SDK v0.2.9 source removes the old state fields and adds the typed,
+- Python SDK v0.2.9 removes the old state fields and adds the typed,
   exact `unit_cost(unit_type, population)` helper plus read-only
   `UNIT_BASE_COSTS`.
 
@@ -318,7 +318,7 @@ SDK versions are separate from gameplay rule versions.
 
 | Version | Date | Developer-visible change |
 |---|---|---|
-| 0.2.9 source | 6 Aug 2026 | Removes maintenance state fields and adds exact dynamic Unit-price helpers; committed but not yet published to PyPI. |
+| 0.2.9 | 6 Aug 2026 | PyPI release removing maintenance state fields and adding exact dynamic Unit-price helpers. |
 | 0.2.8 | 3 Aug 2026 | Adds `ranger.shoot_cell(position)` and accepts `ShootAction` without `target_id`; released on PyPI. |
 | 0.2.7 | 3 Aug 2026 | Adds `core.self_destruct()` and accepts strict `SelfDestructAction` plans for Cores. |
 | 0.2.6 | 2 Aug 2026 | PyPI release adding Unit/Core healing, typed `HealingResult`, and the `CoreResourceCapture` model from the unreleased 0.2.5 source. |

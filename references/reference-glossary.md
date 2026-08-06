@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/reference/glossary.md`.
+> Bundled from `arena-hero-doc` revision `838a8eb8406e82086ee5750ae39cd68b396d0786`: `docs/reference/glossary.md`.
 
 # Glossary
 
