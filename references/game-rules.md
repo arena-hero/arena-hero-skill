@@ -1,10 +1,10 @@
-# Arena Hero v0.13 game rules
+# Arena Hero v0.14 game rules
 
 This is the complete gameplay contract bundled with the Arena Hero skill. Read
 the whole file before writing a tactic or controlling a live Turn.
 
 This contract was reviewed against Arena Hero server revision
-`57c2a5b2c070c808092ddcf5425d0c87773fc6e2` on 3 August 2026.
+`b24cfcd22b82c0af0f3993397d2696629762e7e5` on 6 August 2026.
 If a live server reports newer or incompatible rules, stop rule-dependent play
 and update this bundle instead of mixing versions.
 
@@ -17,7 +17,7 @@ outside its scope.
 1. [World and terrain](#world-and-terrain)
 2. [Tick lifecycle and resolution order](#tick-lifecycle-and-resolution-order)
 3. [Vision and information boundaries](#vision-and-information-boundaries)
-4. [Core, production, migration, and upkeep](#core-production-migration-and-upkeep)
+4. [Core, production, migration, and pricing](#core-production-migration-and-pricing)
 5. [Units and actions](#units-and-actions)
 6. [Movement and cell capacity](#movement-and-cell-capacity)
 7. [Champion Beacon](#champion-beacon)
@@ -130,9 +130,9 @@ old resource coordinates are not grandfathered. The v0.6 capacity release
 preserves the same state. It raises the minimum Core capacity to 10, so the
 upgrade itself cannot destroy inventory. Later population losses still destroy
 inventory above the resulting capacity during resolution. The v0.8
-diagonal-fire, v0.9 Core-resource-capture, v0.10 post-combat HP-recovery, and
-v0.11 excess-Unit upkeep-damage, v0.12 Core-self-destruct, and v0.13 target-free
-Ranger cell-fire releases also
+   diagonal-fire, v0.9 Core-resource-capture, v0.10 post-combat HP-recovery,
+   v0.11 excess-Unit maintenance damage, v0.12 Core-self-destruct, v0.13
+   target-free Ranger cell-fire, and v0.14 dynamic Unit-price releases also
 preserve the world and only
 upgrade rules metadata at an `OPEN` or `COMMITTED` boundary; a Tick already
 `LOCKED` or `RESOLVING` must finish under its old rules first.
@@ -174,31 +174,30 @@ The following order is part of the rule contract:
 2. Resolve every `SELF_DESTRUCT`, remove those Units, and drop any Worker cargo
    on their final cells.
 3. Destroy Core resources above the new capacity after those removals.
-4. Charge upkeep from the remaining population. Apply any unpaid amount to the
-   farthest excess Units and remove upkeep deaths before they can act.
-5. Resolve Unit movement and Core migrations reaching their fourth Tick.
-6. Validate new Core `START_MOVE` actions.
-7. Resolve Champion Beacon pickup and drop.
-8. Resolve Worker harvest and deposit.
-9. Freeze one immutable combat snapshot and validate and accumulate all legal
+4. Resolve Unit movement and Core migrations reaching their fourth Tick.
+5. Validate new Core `START_MOVE` actions.
+6. Resolve Champion Beacon pickup and drop.
+7. Resolve Worker harvest and deposit.
+8. Freeze one immutable combat snapshot and validate and accumulate all legal
    attacks.
-10. Apply damage simultaneously and remove dead Units. For each combat-destroyed
+9. Apply damage simultaneously and remove dead Units. For each combat-destroyed
     Core, transfer what fits to its highest-damage attacker's surviving Core;
     destroy overflow, then remove the destroyed Core and its fleet. Finally,
     destroy any remaining inventory above capacity reduced by combat.
-11. Resolve `SELF_DESTRUCT` for every Core that survived combat. Destroy its
+10. Resolve `SELF_DESTRUCT` for every Core that survived combat. Destroy its
     inventory and fleet, and drop Worker cargo and the Beacon at their actual
     positions.
-12. Resolve surviving Unit `HEAL` actions in ascending raw UUID byte order.
-13. Resolve each remaining stationary Core's `HEAL`, `REPAIR_SHIELD`, or
-    `SPAWN` action. These actions may spend resources captured in step 10.
-14. Immediately attempt to respawn newly destroyed Cores and process any
+11. Resolve surviving Unit `HEAL` actions in ascending raw UUID byte order.
+12. Snapshot each player's living population, then resolve each remaining
+    stationary Core's `HEAL`, `REPAIR_SHIELD`, or dynamically priced `SPAWN`
+    action. These actions may spend resources captured in step 9.
+13. Immediately attempt to respawn newly destroyed Cores and process any
     previously delayed spawn retries.
-15. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
+14. After every fourth resolved Tick, refill each tracked 32 x 32 chunk up to
     its current quota using the post-settlement world.
-16. Atomically commit the world, dynamic resources, results, statistics, journal, and new
+15. Atomically commit the world, dynamic resources, results, statistics, journal, and new
     clock.
-17. Announce the next Tick and publish fresh private states.
+16. Announce the next Tick and publish fresh private states.
 
 ### Atomicity, determinism, and recovery
 
@@ -264,7 +263,7 @@ harvested outside vision, and a later refill may create a different visible node
 A remembered Unit, Core, resource node, or Beacon carrier must not be treated as
 current truth.
 
-## Core, production, migration, and upkeep
+## Core, production, migration, and pricing
 
 ### Core attributes and actions
 
@@ -276,8 +275,7 @@ current truth.
 | Vision | 5 |
 | Starting resources after spawn or respawn | 5 |
 
-Combat damage consumes Core shield before Core HP. Unpaid upkeep damages excess
-Units and never damages the Core.
+Combat damage consumes Core shield before Core HP.
 
 ### Resource storage
 
@@ -290,8 +288,7 @@ resource_capacity = max(10, population x 5)
 
 The limit is strict. Zero, one, and two living Units all provide a capacity of
 10; three living Units provide 15. Whenever population falls, stored resources
-above the new capacity are destroyed by the end of the Tick. An upkeep death
-happens only after the Core inventory has already reached zero.
+above the new capacity are destroyed by the end of the Tick.
 The owner receives `CORE_RESOURCE_OVERFLOW_DESTROYED` with
 `{amount: int, capacity: int}`. A new or respawned player starts with one Worker
 and 5 resources, leaving 5 free capacity.
@@ -317,8 +314,8 @@ A plan may specify at most one Core action:
 
 Any living Core may submit `{"type":"SELF_DESTRUCT"}` with no other fields.
 It has no resource, Unit, movement-state, or cooldown restriction. A migrating
-Core advances or completes its movement first, still pays upkeep, and remains
-attackable during the Tick.
+Core advances or completes its movement first and remains attackable during the
+Tick.
 
 Combat has priority. If an enemy attack destroys the Core, normal destruction
 participation and resource capture apply and the self-destruct does not run. If
@@ -336,13 +333,27 @@ The private `CORE_DESTROYED` event uses reason `SELF_DESTRUCT`, omits
 `destroyed_by`, and is followed by `CORE_RESPAWNED` when placement succeeds.
 The replacement Core may self-destruct again on the next Tick.
 
-### Production
+### Production and dynamic prices
 
-| Unit | Cost |
-|---|---:|
-| Worker | 5 |
-| Vanguard | 10 |
-| Ranger | 12 |
+Population counts living Units only. Let `N` be the population when Core actions
+resolve:
+
+```text
+k = max(0, floor((N - 20) / 5) + 1)
+price = round_half_up(base_price x (13 / 10)^k)
+```
+
+The server evaluates the rational number exactly and rounds only once at the
+end. A half-unit rounds upward.
+
+| Unit | Base price | N 0-19 | N 20-24 | N 25-29 | N 30-34 |
+|---|---:|---:|---:|---:|---:|
+| Worker | 5 | 5 | 7 | 8 | 11 |
+| Vanguard | 10 | 10 | 13 | 17 | 22 |
+| Ranger | 12 | 12 | 16 | 20 | 26 |
+
+The 20th Unit is base-priced; the 21st uses the first increased price. The
+initial Worker and every respawn Worker are free.
 
 - A Core may spawn at most one Unit per Tick.
 - The new Unit appears on the Core cell.
@@ -351,11 +362,14 @@ The replacement Core may self-destruct again on the next Tick.
 - A full-cell spawn fails with `CELL_UNIT_LIMIT` and spends no resources.
 - A newly spawned Unit cannot act in its creation Tick.
 - It is created after combat and cannot be attacked during its birth Tick.
-- It starts contributing to upkeep on the following Tick.
 - Worker deposits resolve before combat, so deposited resources may fund Unit
   healing and the Core action in the same Tick. Captured enemy Core inventory
-  may do the same. Neither can retroactively pay upkeep already charged after
-  the self-destruct phase.
+  may do the same.
+
+Pricing uses the population after same-Tick Unit self-destruction and combat
+deaths. A current state is only a preview: those deaths may make the server
+charge less. `CORE_SPAWN_SUCCEEDED.values.cost` and
+`CORE_SPAWN_FAILED/INSUFFICIENT_RESOURCES.values.required` are authoritative.
 
 ### HP recovery
 
@@ -369,8 +383,7 @@ Unit heals resolve in ascending raw UUID byte order before the Core action. The 
 action then uses the remaining resources. Fatal damage cannot be healed because
 the object is removed before this phase.
 
-A Unit that survives unpaid-upkeep damage keeps its locked action and may heal
-that damage here. A Unit killed by upkeep is already gone and spends nothing.
+A Unit killed by combat is already gone and spends nothing.
 
 It is valid to queue a heal at full HP or with no current resources. Nonfatal
 combat damage or captured resources may make it useful before resolution. If
@@ -406,7 +419,7 @@ next Tick           -> real movement attempt
 - Changing direction requires `CANCEL_MOVE`, which resets progress to zero.
 - While migrating, the Core cannot spawn, heal, repair, pick up or drop the Beacon,
   or receive Worker deposits, but it may `SELF_DESTRUCT`.
-- It still pays upkeep, takes damage, and retains its resource inventory.
+- It still takes damage and retains its resource inventory.
 - Colocated Units do not move with it.
 - A carried Beacon remains at the Core's current logical position until the real
   move succeeds, then follows the Core.
@@ -425,54 +438,16 @@ next Tick           -> real movement attempt
 - A failed fourth-Tick move leaves the Core in place and clears migration
   progress.
 
-### Population and upkeep
-
-Population counts Units only:
-
-```text
-N = Worker + Vanguard + Ranger
-tier = floor(N / 20)
-upkeep = tier x (tier + 1) / 2
-```
-
-| Population | Tier | Resources per Tick |
-|---:|---:|---:|
-| 0-19 | 0 | 0 |
-| 20-39 | 1 | 1 |
-| 40-59 | 2 | 3 |
-| 60-79 | 3 | 6 |
-| 80-99 | 4 | 10 |
-| 100-119 | 5 | 15 |
-
-Unit `SELF_DESTRUCT` resolves first. Upkeep is automatic, uses no Core action, and
-uses the remaining population. A newly spawned Unit starts paying on the next
-Tick; a Unit killed later in the Tick has already paid for this one.
-
-The server spends available Core resources first. If resources cannot cover
-upkeep, inventory becomes zero and each missing resource deals 1 HP of damage
-to an excess Unit. The Core never loses shield or HP from upkeep.
-
-The nearest 19 Units to the current Core are protected. Other Units are ordered
-by descending Manhattan distance from the Core; equal distances use ascending
-raw Unit UUID bytes. Damage is concentrated on the first Unit until it dies,
-then continues to the next, until the deficit is exhausted.
-
-An upkeep death is removed before movement, Beacon actions, Worker actions, and
-combat. Worker cargo and a carried Beacon drop at the death cell. The death
-increments `units_lost` and actual applied damage increments `damage_received`,
-but no player receives destruction participation. A survivor keeps its action
-and may heal after combat.
-
-`UPKEEP_PAID` reports `{due: int, paid: int, deficit: int}`. Every affected Unit
-also receives `UNIT_DAMAGED` with reason `UPKEEP_DEFICIT` and
-`{damage: int, hp: int}`; `hp: 0` means the Unit was removed.
+There is no per-Tick maintenance charge. Population changes storage capacity and
+the price of the next Unit, but never automatically spends resources or damages
+Units.
 
 ## Units and actions
 
 Every Unit has a stable UUID while alive, occupies one cell slot, moves at most
 one cardinal cell per Tick, and performs at most one action.
 
-| Unit | HP | Vision | Cost | Attack |
+| Unit | HP | Vision | Base price | Attack |
 |---|---:|---:|---:|---|
 | Worker | 2 | 3 | 5 | none |
 | Vanguard | 4 | 4 | 10 | 1 damage to adjacent target cell |
@@ -483,7 +458,7 @@ Every Unit supports `MOVE`, `PICKUP_BEACON`, `DROP_BEACON`, `HEAL`,
 
 ### Self-destruct
 
-`{"type":"SELF_DESTRUCT"}` removes the Unit before upkeep and consumes its
+`{"type":"SELF_DESTRUCT"}` removes the Unit before movement and spawn pricing and consumes its
 action for the Tick. It gives no production-cost refund, deals no area damage,
 and awards no destruction participation. Worker cargo drops on the final cell. A carried
 Beacon drops at the Unit's cell and cannot be picked up until the next Tick.
@@ -721,7 +696,7 @@ overflow is destroyed.
 
 If the winner's Core also dies in that combat Tick, the victim's entire
 inventory is destroyed. It does not enter the winner's replacement Core or pass
-to the runner-up. Upkeep cannot destroy a Core under the current rules. When several Cores
+to the runner-up. There is no automatic population-maintenance damage. When several Cores
 die in one Tick, victims resolve by raw player UUID order, so earlier captures
 consume capacity before later ones.
 

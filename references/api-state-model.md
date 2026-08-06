@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/api/state-model.md`.
+> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/api/state-model.md`.
 
 # State model
 
@@ -33,8 +33,6 @@ replaces the one before it.
     "status": "ACTIVE",
     "resources": 5,
     "population": 1,
-    "population_tier": 0,
-    "upkeep_next_tick": 0,
     "champion_beacon": {"position": [0, 0]},
     "objects": [
       {
@@ -73,8 +71,6 @@ If you want machine-readable definitions, use the
 | `respawn_at_tick` | positive int64 | Only when respawning | Tick of the next spawn attempt after a placement failure. |
 | `resources` | integer ≥ 0 | Yes | Resources stored by the Core, capped at `max(10, population × 5)`; Worker cargo is separate. |
 | `population` | integer ≥ 0 | Yes | Living owned Units; the Core is not counted. |
-| `population_tier` | integer ≥ 0 | Yes | `floor(population / 20)`. |
-| `upkeep_next_tick` | integer ≥ 0 | Yes | `tier × (tier + 1) / 2` for the current population. Core resources pay first; a deficit damages farthest excess Units while protecting the nearest 19. |
 | `champion_beacon` | object | Yes | Public position and, when visible, carrier state. |
 | `objects` | array | Yes | Owned entities plus currently visible terrain and enemies. |
 | `events` | array | Yes | Resolution results addressed to this player. |
@@ -84,6 +80,12 @@ arrays rather than going missing. Core destruction normally respawns in the same
 Tick, so `RESPAWNING` is published only during initial admission or after the
 resolver cannot find a legal spawn. The resource and population fields remain,
 but you have no Core until `CORE_RESPAWNED` arrives.
+
+Use `population` to estimate the next Unit price:
+`round_half_up(base_price × (13/10)^k)`, where
+`k = max(0, floor((population - 20) / 5) + 1)`. The server settles the price
+after same-Tick self-destruction and combat, so the spawn result event is
+authoritative.
 
 ## Champion Beacon {#champion-beacon}
 

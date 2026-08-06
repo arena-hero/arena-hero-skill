@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/api/commands.md`.
+> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/api/commands.md`.
 
 # Command API
 
@@ -90,7 +90,7 @@ Read `type` first, then send only the fields shown in that row.
 | `PICKUP_BEACON` | Any | `{"type":"PICKUP_BEACON"}` | Tries to pick up the ground Beacon on the actor's cell. |
 | `DROP_BEACON` | Any | `{"type":"DROP_BEACON"}` | The current carrier tries to drop the Beacon. |
 | `HEAL` | Any | `{"type":"HEAL"}` | After combat, restores HP at 1 Core resource per HP while at the owned stationary Core. |
-| `SELF_DESTRUCT` | Any | `{"type":"SELF_DESTRUCT"}` | Removes this Unit before upkeep is calculated. |
+| `SELF_DESTRUCT` | Any | `{"type":"SELF_DESTRUCT"}` | Removes this Unit before movement and before spawn pricing. |
 
 ### Moving
 
@@ -161,7 +161,7 @@ Any Unit can use both Beacon actions.
 
 ### Self-destructing a Unit
 
-`SELF_DESTRUCT` has no other fields. It resolves before upkeep, removes the Unit,
+`SELF_DESTRUCT` has no other fields. It resolves before movement, removes the Unit,
 and consumes its action for the Tick. There is no resource refund and no damage
 to nearby objects. Worker cargo drops on that cell. If the Unit carries the Beacon, it
 drops on that cell and remains unavailable for pickup until the next Tick.
@@ -190,8 +190,13 @@ failures: the stored plan remains valid and no resource is spent.
 | `DROP_BEACON` | `{"type":"DROP_BEACON"}` | A carrier Core tries to drop the Beacon. |
 | `SELF_DESTRUCT` | `{"type":"SELF_DESTRUCT"}` | After combat, destroys the surviving Core, its inventory, and all owned Units, then enters the normal respawn flow. |
 
-`unit_type` has to be `WORKER`, `VANGUARD`, or `RANGER`, currently costing 5, 10,
-and 12 resources.
+`unit_type` has to be `WORKER`, `VANGUARD`, or `RANGER`. Their base prices are
+5, 10, and 12 resources. At population `N`, the server charges
+`round_half_up(base_price × (13/10)^k)`, where
+`k = max(0, floor((N - 20) / 5) + 1)`. The 20th Unit is base-priced; the 21st
+uses the first 30% increase. Population is measured after same-Tick
+self-destruction and combat deaths. Read `CORE_SPAWN_SUCCEEDED.values.cost` or
+`CORE_SPAWN_FAILED.values.required` for the actual settled price.
 
 A migrating Core can carry on with `WAIT`, stop with `CANCEL_MOVE`, or queue
 `SELF_DESTRUCT`; anything else fails with `CORE_ALREADY_MOVING`. A self-destruct

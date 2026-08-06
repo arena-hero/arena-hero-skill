@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `e32ff948b7ee05fa932a1305eef164bc45fc2986`: `docs/api-reference.md`.
+> Bundled from `arena-hero-python` revision `423d252adcca439669adb3e7b04252e53b4430bd`: `docs/api-reference.md`.
 
 # API reference
 
@@ -174,12 +174,9 @@ difference is that `AsyncTurn.submit()` must be awaited.
 
 `Position` is `tuple[int, int]` in `(x, y)` order.
 
-`state.upkeep_next_tick` is the upcoming charge. The server spends Core
-resources first; any `deficit` damages excess Units, never the Core. The nearest
-19 Units are protected. Remaining Units are ordered by descending Manhattan
-distance from the current Core, then raw UUID bytes, and damage is concentrated
-in that order. Upkeep deaths happen before actions; surviving damaged Units can
-still act.
+Production prices are dynamic. Call `unit_cost(unit_type, state.population)` to
+calculate the price shown for the current state. The server recalculates it when
+`SPAWN` resolves, after same-Tick self-destruction and combat deaths.
 
 `resource_cells` contains visible natural points and Worker cargo piles, but not
 pile amounts. One successful harvest consumes a natural point; a partially
@@ -241,7 +238,7 @@ All controlled Unit objects expose:
 | `pickup_beacon()` | Pick up the Beacon on the current cell. |
 | `drop_beacon()` | Drop a carried Beacon. |
 | `heal()` | Recover HP after combat while sharing a cell with the owned stationary Core. |
-| `self_destruct()` | Remove this Unit before upkeep. Worker cargo drops on the final cell; there is no refund or area damage. |
+| `self_destruct()` | Remove this Unit before movement. Worker cargo drops on the final cell; there is no refund or area damage. |
 | `wait()` | Queue an explicit `WAIT`. |
 | `clear_action()` | Remove this Unit from the queued plan. |
 
@@ -263,7 +260,7 @@ Extra controls:
 | `harvest()` | Harvest the resource on the current cell. |
 | `deposit()` | Deposit what fits while sharing a cell with the Core; any remainder stays on the Worker. |
 
-Any Worker death, including unpaid-upkeep damage, leaves its complete cargo
+Any Worker death from combat, Core destruction, or self-destruction leaves its complete cargo
 amount as a recoverable resource pile on the final cell. For those events, use
 `event.resource_amount`; a successful recovery has
 `event.harvest_source is HarvestSource.DROPPED_CARGO`.
@@ -370,8 +367,6 @@ does not spend resources.
 | `respawn_at_tick` | `int | None` |
 | `resources` | `int` |
 | `population` | `int` |
-| `population_tier` | `int` |
-| `upkeep_next_tick` | `int` |
 | `champion_beacon` | `ChampionBeacon` |
 | `objects` | `tuple[TerrainView | CoreView | UnitView, ...]` |
 | `events` | `tuple[ResolutionEvent, ...]` |
@@ -465,14 +460,6 @@ return `None`; inspect `reason_code` for `HP_FULL`, `INSUFFICIENT_RESOURCES`,
 harvest. These helpers return `None` when the event or a future value does not
 match.
 
-For upkeep, first inspect `UPKEEP_PAID.values`: `due` is the full charge,
-`paid` is the amount removed from the Core, and `deficit` is the unpaid amount.
-Every affected Unit then has a `UNIT_DAMAGED` event with
-`reason_code == "UPKEEP_DEFICIT"`; `target_id` identifies the Unit and `values`
-contains the integer `damage` and post-damage `hp`. An `hp` of `0` means the Unit
-was removed before its action. These fields remain in the forward-compatible
-`values` mapping rather than a closed event enum.
-
 ### `HealingResult`
 
 | Field | Type | Meaning |
@@ -487,7 +474,10 @@ was removed before its action. These fields remain in the forward-compatible
 from arena_hero import (
     CORE_RESOURCE_CAPACITY_PER_UNIT,
     CORE_RESOURCE_MINIMUM_CAPACITY,
+    UNIT_BASE_COSTS,
+    UnitType,
     core_resource_capacity,
+    unit_cost,
 )
 ```
 
@@ -495,6 +485,19 @@ from arena_hero import (
 `CORE_RESOURCE_MINIMUM_CAPACITY` is `10`.
 `core_resource_capacity(population)` returns
 `max(10, population * 5)` and rejects a negative population.
+`UNIT_BASE_COSTS` is a read-only mapping with Worker 5, Vanguard 10, and Ranger
+12. `unit_cost(unit_type, population)` applies the exact current production
+formula and rejects a negative population:
+
+```text
+exponent = max(0, floor((population - 20) / 5) + 1)
+price = round_half_up(base_price × (13 / 10)^exponent)
+```
+
+Only the final result is rounded. The 21st Unit is the first increased-price
+Unit. `CORE_SPAWN_SUCCEEDED.values.cost` and
+`CORE_SPAWN_FAILED/INSUFFICIENT_RESOURCES.values.required` are authoritative for
+the price actually used at settlement.
 
 ### `Tick`
 
@@ -650,4 +653,4 @@ For timing, replacement, receipts, and reconnect rules, read
 
 The `arena_hero` package exports the following public names from its top-level module:
 
-`CORE_RESOURCE_CAPACITY_PER_UNIT`, `CORE_RESOURCE_MINIMUM_CAPACITY`, `APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreResourceCapture`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `HealAction`, `HealingResult`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`, `core_resource_capacity`.
+`CORE_RESOURCE_CAPACITY_PER_UNIT`, `CORE_RESOURCE_MINIMUM_CAPACITY`, `UNIT_BASE_COSTS`, `APIError`, `Accepted`, `ArenaHeroClient`, `ArenaHeroError`, `AsyncArenaHeroClient`, `AsyncGameEvent`, `AsyncTurn`, `AuthenticationError`, `BeaconStatus`, `CancelMoveAction`, `ChampionBeacon`, `CommandPlan`, `CommandSource`, `ConfigurationError`, `Coordinate`, `Core`, `CoreResourceCapture`, `CoreState`, `CoreView`, `DepositAction`, `Direction`, `DropBeaconAction`, `HarvestAction`, `HarvestSource`, `HealAction`, `HealingResult`, `InvalidActionError`, `MoveAction`, `PickupBeaconAction`, `PlayerState`, `PlayerStatus`, `PolicyViolationError`, `Position`, `ProtocolError`, `Ranger`, `Received`, `RepairShieldAction`, `ResolutionEvent`, `SelfDestructAction`, `ShootAction`, `SpawnAction`, `StartMoveAction`, `SweepAction`, `SyncGameEvent`, `TerrainView`, `Tick`, `TransportError`, `Turn`, `TurnClosedError`, `Unit`, `UnitType`, `UnitView`, `Vanguard`, `WaitAction`, `Worker`, `__version__`, `core_resource_capacity`, `unit_cost`.

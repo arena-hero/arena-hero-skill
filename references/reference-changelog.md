@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/reference/changelog.md`.
+> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/reference/changelog.md`.
 
 # Changelog
 
@@ -12,6 +12,38 @@ internal security fixes are grouped instead of copied commit by commit.
 Gameplay rule versions are independent from the Python SDK version. The public
 HTTP and WebSocket API is still v0.1. For the exact currently reviewed source,
 see [Source and version policy](reference-source-and-version.md).
+
+## 6 August 2026
+
+### Gameplay rules v0.14 — dynamic Unit prices replace maintenance
+
+- The per-Tick maintenance charge and all maintenance damage are gone. The
+  `population_tier`, `upkeep_next_tick`, `UPKEEP_PAID`, and `UPKEEP_DEFICIT`
+  protocol concepts have been removed rather than kept as deprecated fields.
+- Worker, Vanguard, and Ranger keep base prices 5, 10, and 12 for Units 1-20.
+  Starting with the 21st Unit, price is
+  `round_half_up(base_price × (13/10)^k)`, where
+  `k = max(0, floor((population - 20) / 5) + 1)`. The exact fraction is rounded
+  only once at the end.
+- Spawn pricing uses living population after same-Tick Unit self-destruction and
+  combat deaths. The initial and respawn Worker remain free.
+- `CORE_SPAWN_SUCCEEDED.values.cost` and
+  `CORE_SPAWN_FAILED/INSUFFICIENT_RESOURCES.values.required` report the actual
+  settled price.
+- Both official web clients remove maintenance warnings and results, and show
+  dynamic prices from the current state. Same-Tick deaths can make the server
+  charge less than that preview.
+- Python SDK v0.2.9 source removes the old state fields and adds the typed,
+  exact `unit_cost(unit_type, population)` helper plus read-only
+  `UNIT_BASE_COSTS`.
+
+This is a breaking state/event-model cleanup for clients that require the two
+removed state fields or enumerate maintenance events. HTTP and WebSocket remain
+API v0.1 because their endpoints and envelope shapes are unchanged.
+
+Source: [server `b24cfcd`](https://github.com/arena-hero/arena-hero/commit/b24cfcd22b82c0af0f3993397d2696629762e7e5),
+[frontend `00f4093`](https://github.com/arena-hero/arena-hero-web/commit/00f4093e532309f750a12dfae6864f7b164a898c),
+and [SDK `423d252`](https://github.com/arena-hero/arena-hero-python/commit/423d252adcca439669adb3e7b04252e53b4430bd).
 
 ## 3 August 2026
 
@@ -286,6 +318,7 @@ SDK versions are separate from gameplay rule versions.
 
 | Version | Date | Developer-visible change |
 |---|---|---|
+| 0.2.9 source | 6 Aug 2026 | Removes maintenance state fields and adds exact dynamic Unit-price helpers; committed but not yet published to PyPI. |
 | 0.2.8 | 3 Aug 2026 | Adds `ranger.shoot_cell(position)` and accepts `ShootAction` without `target_id`; released on PyPI. |
 | 0.2.7 | 3 Aug 2026 | Adds `core.self_destruct()` and accepts strict `SelfDestructAction` plans for Cores. |
 | 0.2.6 | 2 Aug 2026 | PyPI release adding Unit/Core healing, typed `HealingResult`, and the `CoreResourceCapture` model from the unreleased 0.2.5 source. |

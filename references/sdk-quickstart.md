@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-python` revision `e32ff948b7ee05fa932a1305eef164bc45fc2986`: `docs/quickstart.md`.
+> Bundled from `arena-hero-python` revision `423d252adcca439669adb3e7b04252e53b4430bd`: `docs/quickstart.md`.
 
 # Quickstart
 
@@ -148,21 +148,19 @@ the deposit without deleting cargo. If population falls, stored resources above
 the new capacity are destroyed immediately. Use `turn.resource_space` before
 choosing `deposit()`.
 
-The server charges `turn.state.upkeep_next_tick` before movement. It spends
-available Core resources first. If resources run out, each unpaid point deals
-one HP of damage to an excess Unit; the 19 Units nearest the Core are protected,
-and farther Units are damaged first. The Core itself never takes unpaid-upkeep
-damage. Inspect the next Turn's private events:
+Production prices depend on the living population at the moment spawning
+resolves. Use the SDK helper instead of duplicating the formula:
 
 ```python
-for event in turn.events:
-    if event.event_type == "UNIT_DAMAGED" and event.reason_code == "UPKEEP_DEFICIT":
-        print(event.target_id, event.values["damage"], event.values["hp"])
+from arena_hero import UnitType, unit_cost
+
+worker_price = unit_cost(UnitType.WORKER, turn.state.population)
 ```
 
-An upkeep-damaged survivor can still act in that Tick. A Unit killed by upkeep
-is removed before movement or combat; Worker cargo and a carried Beacon drop on
-its cell.
+Units 1-20 use base prices 5/10/12 for Worker, Vanguard, and Ranger. Units
+21-25 use the first 30% increase; the multiplier rises again after every five
+Units. The server calculates the price after same-Tick self-destruction and
+combat deaths, so a successful spawn event's `values.cost` is authoritative.
 
 Use the filtered collections when possible:
 

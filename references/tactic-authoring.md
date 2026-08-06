@@ -3,7 +3,7 @@
 Use this reference for tactic-script mode. Before making any tactical decision,
 read the complete bundled rules:
 
-- [Complete Arena Hero v0.13 rules](game-rules.md)
+- [Complete Arena Hero v0.14 rules](game-rules.md)
 
 Use the bundled documentation while authoring:
 
@@ -17,20 +17,21 @@ Use the bundled documentation while authoring:
 - [Errors and recovery](api-errors.md)
 
 Never infer a numeric rule from an enum name, an old tactic, or general game
-knowledge. If the live contract is newer than the bundled v0.13 rules, stop and
+knowledge. If the live contract is newer than the bundled v0.14 rules, stop and
 update the bundle; do not fill the gap with a plausible constant.
 
 Add a compatible PyPI release through the project's existing dependency
 manager. For a standalone script:
 
 ```bash
-python -m pip install 'arena-hero>=0.2.8,<0.3'
+python -m pip install 'arena-hero>=0.2.9,<0.3'
 ```
 
 Do not install the SDK from a Git repository.
 
-Target-free Ranger cell fire requires SDK v0.2.8; Core self-destruction requires
-v0.2.7 or newer. If PyPI has not published that compatible version yet, stop and
+Dynamic Unit-price helpers require SDK v0.2.9; target-free Ranger cell fire
+requires v0.2.8 and Core self-destruction requires v0.2.7. If PyPI has not
+published the compatible version yet, stop and
 report the release mismatch instead of recreating or weakening the SDK models.
 
 ## Build the smallest useful program
@@ -85,8 +86,9 @@ plans, and safely retries exact request bodies. Do not rebuild those parts.
    truth.
 7. **Champion Beacon:** use only the status and carrier details visible in the
    current state.
-8. **Production and migration:** account for costs, upkeep, population, and
-   multi-Tick Core movement from the current Core view.
+8. **Production and migration:** preview dynamic prices with
+   `unit_cost(unit_type, turn.state.population)`, account for population and
+   multi-Tick Core movement, and treat the settled spawn event as authoritative.
 
 If the requested tactic is underspecified, use a balanced starter policy:
 
@@ -97,14 +99,11 @@ If the requested tactic is underspecified, use a balanced starter policy:
 - reconsider a resource target after success or `RESOURCE_DEPLETED`, then use
   the next complete state to see whether a cargo pile remains;
 - defend against visible nearby enemies before pursuing distant goals;
-- spawn conservatively so expected upkeep does not consume resources and damage
-  the farthest excess Units;
-- treat the nearest 19 Units as upkeep-protected, but do not confuse that with
-  combat protection; place expendable excess Units with the farthest-first
-  upkeep order in mind;
-- after `UNIT_DAMAGED/UPKEEP_DEFICIT`, remove `hp == 0` Units from tactical
-  assumptions and allow a surviving Unit's locked action or legal `HEAL` to
-  proceed;
+- use `unit_cost` before spawning; remember that Unit self-destruction or combat
+  deaths can lower the server's same-Tick settled price;
+- use `CORE_SPAWN_SUCCEEDED.values.cost` and
+  `CORE_SPAWN_FAILED.values.required` when learning what the server actually
+  charged or required;
 - leave an object without an action when no legal useful action is known.
 
 Do not claim this default is optimal.

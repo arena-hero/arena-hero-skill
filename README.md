@@ -23,19 +23,19 @@ The official guide is at
 
 ## Complete documentation included
 
-The repository carries Arena Hero API v0.1 and gameplay rules v0.13 locally, so
+The repository carries Arena Hero API v0.1 and gameplay rules v0.14 locally, so
 the Skill does not need the documentation site to reconstruct the contract:
 
 - complete gameplay rules and numeric reference;
 - raw Agent quickstart and reliable command loop;
 - HTTP command API and WebSocket protocol;
 - every state field, action, event, reason code, error, and retry rule;
-- the current v0.13 rules for target-free eight-direction Ranger cell fire,
+- the current v0.14 rules for target-free eight-direction Ranger cell fire,
   precision Ranger shots, Unit and Core self-destruct,
   Worker cargo-drop, resource-node quota,
   strict `max(10, population × 5)` Core resource capacity, refill, visibility,
   contention, migration, Core resource capture, post-combat Unit/Core HP
-  recovery, unpaid-upkeep damage to excess Units, Core self-destruct attack
+  recovery, exact population-based Unit prices, Core self-destruct attack
   precedence and drops, and the same-Tick respawn
   contract;
 - complete Python SDK quickstart and API reference, including synchronous and
@@ -51,8 +51,10 @@ The bundled files record the documentation and SDK commits they came from.
 When online, the Skill still checks the official source/version policy before
 performing contract-sensitive work.
 
-The bundled contract tracks Python SDK v0.2.8. Use `ranger.shoot_cell(position)`
-for target-free cell fire and keep `ranger.shoot(...)` for precision shots.
+The bundled contract tracks Python SDK v0.2.9. Use
+`unit_cost(unit_type, population)` for production previews,
+`ranger.shoot_cell(position)` for target-free cell fire, and
+`ranger.shoot(...)` for precision shots.
 
 ## Two modes
 
@@ -93,7 +95,7 @@ The command below validates the current compatible PyPI release.
 
 ```bash
 uv run --python 3.11 \
-  --with arena-hero==0.2.8 \
+  --with arena-hero==0.2.9 \
   --with pytest==8.4.2 \
   --with pyyaml==6.0.3 \
   python -m pytest -q

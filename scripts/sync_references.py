@@ -54,6 +54,8 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "RESOURCE_DEPLETED",
         "SELF_DESTRUCT",
         "WORKER_CARGO_DROPPED",
+        "CORE_SPAWN_SUCCEEDED.values.cost",
+        "round_half_up",
     ),
     "docs/api/resolution-results.md": (
         "CORE_HEAL_SUCCEEDED",
@@ -65,21 +67,21 @@ DOC_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "UNIT_HEAL_FAILED",
         "WORKER_CARGO_DROPPED",
         "DROPPED_CARGO",
-        "UPKEEP_DEFICIT",
+        "actual dynamic price",
     ),
-    "docs/api/state-model.md": ("nearest 19", "owner_username"),
+    "docs/api/state-model.md": ("spawn result event is", "owner_username"),
     "docs/reference/numbers.md": (
         "axis(c)",
         "Cargo piles",
         "HP recovery",
         "eight-direction range 1-3",
         "resource_capacity = max(10, population × 5)",
-        "nearest 19",
+        "unit_price = round_half_up",
     ),
     "docs/reference/source-and-version.md": (
-        "Gameplay rules | v0.13",
+        "Gameplay rules | v0.14",
         "Python SDK",
-        "v0.2.8",
+        "v0.2.9",
     ),
     "static/openapi.yaml": ("HEAL", "RESOURCE_DEPLETED", "SELF_DESTRUCT"),
     "static/asyncapi.yaml": (
@@ -102,7 +104,8 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "exact 45-degree diagonal",
         "minimum capacity of 10",
         "resource_space",
-        "UPKEEP_DEFICIT",
+        "unit_cost",
+        "values.cost",
     ),
     "docs/api-reference.md": (
         "shoot_cell(expected_cell)",
@@ -117,8 +120,9 @@ SDK_GAME_CONTRACT: Mapping[str, tuple[str, ...]] = {
         "SelfDestructAction",
         "WORKER_CARGO_DROPPED",
         "CORE_RESOURCE_MINIMUM_CAPACITY",
+        "UNIT_BASE_COSTS",
+        "unit_cost",
         "owner_username",
-        "UPKEEP_DEFICIT",
     ),
 }
 

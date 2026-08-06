@@ -137,14 +137,14 @@ Before writing a tactic or submitting a plan:
     cannot be healed. A full-HP or currently unfunded heal may be queued in
     advance and fails privately without cost if it is still impossible. Read
     `event.healing` or the `UNIT_HEAL_*` and `CORE_HEAL_*` events for results.
-13. Upkeep spends available Core resources first. Any unpaid amount damages
-    excess Units, never the Core. The nearest 19 Units are protected; order the
-    rest by descending Manhattan distance from the current Core, then raw Unit
-    UUID bytes. Damage is concentrated in that order. An upkeep death happens
-    before actions and drops Worker cargo or a carried Beacon without awarding
-    destruction participation. A survivor keeps its action and may later heal.
-    Read `UPKEEP_PAID` and `UNIT_DAMAGED/UPKEEP_DEFICIT`; do not plan around the
-    removed behavior where upkeep damaged or destroyed the Core.
+13. There is no per-Tick maintenance charge. Production uses
+    `unit_cost(unit_type, turn.state.population)`: base prices are Worker 5,
+    Vanguard 10, and Ranger 12; the 21st Unit is the first 30% increase, with
+    another exact 1.3 multiplier after every five Units. The server prices the
+    spawn after same-Tick Unit self-destruction and combat deaths, so the current
+    Turn is a preview and `CORE_SPAWN_SUCCEEDED.values.cost` or
+    `CORE_SPAWN_FAILED.values.required` is authoritative. Initial and respawn
+    Workers are free.
 
 Read [references/direct-play.md](references/direct-play.md) before direct play.
 

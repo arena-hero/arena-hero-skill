@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/reference/numbers.md`.
+> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/reference/numbers.md`.
 
 # Rules at a glance
 
@@ -33,7 +33,7 @@
 
 ## Units
 
-| Unit | HP | Vision | Cost | Damage / range |
+| Unit | HP | Vision | Base price | Damage / range |
 |---|---:|---:|---:|---|
 | Worker | 2 | 3 | 5 | none |
 | Vanguard | 4 | 4 | 10 | 1 to adjacent target cell |
@@ -71,30 +71,29 @@ Cargo piles do not count toward the chunk's natural-resource quota.
 ```text
 population = Worker + Vanguard + Ranger
 resource_capacity = max(10, population × 5)
-tier = floor(population / 20)
-upkeep = tier × (tier + 1) / 2
+k = max(0, floor((population - 20) / 5) + 1)
+unit_price = round_half_up(base_price × (13 / 10)^k)
 ```
 
 Deposits move only what fits. If population falls, stored resources above the
 new capacity are destroyed immediately.
 
-If upkeep cannot be paid in full, every unpaid point deals 1 HP of damage to
-excess Units. The nearest 19 Units are protected; the others are damaged from
-farthest to nearest, with raw UUID order breaking equal-distance ties. The Core
-takes no upkeep-shortfall damage.
+There is no per-Tick maintenance charge. The dynamic price uses the living
+population after same-Tick Unit self-destruction and combat deaths. The exact
+fraction is rounded once at the end, with halves rounded upward. The initial and
+respawn Worker are free.
 
 Combat-destroyed Core inventory goes to the player who dealt the most damage to
 that Core during the Tick, up to this capacity. Ties use raw player UUID order;
 overflow is destroyed, and all loot is destroyed if the winner's Core also dies.
 
-| Population | Upkeep |
-|---:|---:|
-| 0-19 | 0 |
-| 20-39 | 1 |
-| 40-59 | 3 |
-| 60-79 | 6 |
-| 80-99 | 10 |
-| 100-119 | 15 |
+| Population before spawn | Worker | Vanguard | Ranger |
+|---:|---:|---:|---:|
+| 0-19 | 5 | 10 | 12 |
+| 20-24 | 7 | 13 | 16 |
+| 25-29 | 8 | 17 | 20 |
+| 30-34 | 11 | 22 | 26 |
+| 100-104 | 433 | 865 | 1,038 |
 
 ## Commands
 

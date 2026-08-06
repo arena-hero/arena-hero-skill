@@ -104,13 +104,15 @@ def test_protocol_failures_upgrade_the_sdk_before_network_diagnosis() -> None:
     tactic_authoring = (REFERENCES / "tactic-authoring.md").read_text()
     direct_play = (REFERENCES / "direct-play.md").read_text()
     workflow = (ROOT / ".github/workflows/validate.yml").read_text()
-    assert "arena-hero==0.2.8" in readme
-    assert "arena-hero>=0.2.8,<0.3" in tactic_authoring
-    assert "arena-hero>=0.2.8,<0.3" in direct_play
-    assert workflow.count("arena-hero==0.2.8") == 2
+    assert "arena-hero==0.2.9" in readme
+    assert "arena-hero>=0.2.9,<0.3" in tactic_authoring
+    assert "arena-hero>=0.2.9,<0.3" in direct_play
+    assert workflow.count("arena-hero==0.2.9") == 2
     assert "CoreResourceCapture" in arena_hero.__all__
     assert "HealAction" in arena_hero.__all__
     assert "HealingResult" in arena_hero.__all__
+    assert "UNIT_BASE_COSTS" in arena_hero.__all__
+    assert "unit_cost" in arena_hero.__all__
     assert hasattr(arena_hero.Ranger, "shoot_cell")
 
 
@@ -135,15 +137,15 @@ def test_readme_explains_installation_and_both_modes() -> None:
     assert "references/api-overview.md" in normalized
     assert "OpenAPI and AsyncAPI" in normalized
     assert (
-        "current v0.13 rules for target-free eight-direction Ranger cell fire"
+        "current v0.14 rules for target-free eight-direction Ranger cell fire"
         in normalized
     )
-    assert "unpaid-upkeep damage to excess Units" in normalized
+    assert "exact population-based Unit prices" in normalized
     assert "max(10, population × 5)" in normalized
     assert "Worker cargo-drop" in normalized
     assert "resource-node quota" in normalized
     assert "https://doc.arenahero.io/skill/overview" in normalized
-    assert "Python SDK v0.2.8" in normalized
+    assert "Python SDK v0.2.9" in normalized
     assert "Core self-destruct" in normalized
 
 
@@ -154,7 +156,7 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "World and terrain",
         "Tick lifecycle and resolution order",
         "Vision and information boundaries",
-        "Core, production, migration, and upkeep",
+        "Core, production, migration, and pricing",
         "Units and actions",
         "Movement and cell capacity",
         "Champion Beacon",
@@ -172,8 +174,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "quota(cx, cy) = max(2, floor(16 * 8 / (8 + ring(cx, cy))))",
         "After settlement of every fourth logical Tick",
         "RESOURCE_DEPLETED",
-        "tier = floor(N / 20)",
-        "upkeep = tier x (tier + 1) / 2",
+        "k = max(0, floor((N - 20) / 5) + 1)",
+        "price = round_half_up(base_price x (13 / 10)^k)",
         "SELF_DESTRUCT",
         "UNIT_SELF_DESTRUCTED",
         "WORKER_CARGO_DROPPED",
@@ -202,8 +204,8 @@ def test_bundled_rules_cover_complete_gameplay_contract() -> None:
         "If the winner's Core also dies in that combat Tick",
         "Unit heals resolve in ascending raw UUID byte order",
         "Fatal damage cannot be healed",
-        "nearest 19 Units",
-        "UPKEEP_DEFICIT",
+        "There is no per-Tick maintenance charge",
+        "CORE_SPAWN_SUCCEEDED.values.cost",
     }
     normalized_rules = " ".join(rules.split())
     for rule in required_rules:
@@ -257,6 +259,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "Idempotency-Key",
             "RESOURCE_DEPLETED",
             "exact 45-degree diagonal",
+            "round_half_up",
         },
         "api-state-model.md": {
             "# State model",
@@ -278,7 +281,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "CORE_HEAL_FAILED",
             "WORKER_CARGO_DROPPED",
             "DROPPED_CARGO",
-            "UPKEEP_DEFICIT",
+            "actual dynamic price",
         },
         "api-errors.md": {
             "# Errors and recovery",
@@ -293,7 +296,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "turn.submit()",
             "RESOURCE_DEPLETED",
             "exact 45-degree diagonal",
-            "UPKEEP_DEFICIT",
+            "unit_cost",
             "turn.core.self_destruct()",
         },
         "sdk-reference.md": {
@@ -306,7 +309,8 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "HealAction",
             "HealingResult",
             "exact 45-degree diagonal",
-            "UPKEEP_DEFICIT",
+            "UNIT_BASE_COSTS",
+            "unit_cost",
             "self_destruct()",
         },
         "reference-numbers.md": {
@@ -316,7 +320,7 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
             "HP recovery",
             "axis(c)",
             "eight-direction range 1-3",
-            "nearest 19",
+            "unit_price = round_half_up",
         },
         "reference-glossary.md": {
             "# Glossary",
@@ -326,14 +330,14 @@ def test_bundled_api_and_sdk_documentation_is_complete() -> None:
         },
         "reference-changelog.md": {
             "# Changelog",
-            "Gameplay rules v0.13",
+            "Gameplay rules v0.14",
             "Python SDK releases",
         },
         "reference-source-and-version.md": {
             "# Source and version policy",
-            "Gameplay rules | v0.13",
+            "Gameplay rules | v0.14",
             "Python SDK",
-            "v0.2.8",
+            "v0.2.9",
             "Reviewed server commit",
         },
     }
@@ -384,7 +388,11 @@ def test_bundled_openapi_and_asyncapi_are_valid() -> None:
     assert "RESOURCE_REFILLED" not in schemas["EventType"]["enum"]
     assert "UNIT_SELF_DESTRUCTED" in schemas["EventType"]["enum"]
     assert "WORKER_CARGO_DROPPED" in schemas["EventType"]["enum"]
-    assert "UPKEEP_DEFICIT" in schemas["ResolutionEvent"]["description"]
+    assert "settled dynamic Unit price" in schemas["ResolutionEvent"]["description"]
+    assert "UPKEEP_PAID" not in schemas["EventType"]["enum"]
+    assert "population_tier" not in schemas["PlayerState"]["properties"]
+    assert "upkeep_next_tick" not in schemas["PlayerState"]["properties"]
+    assert "round-half-up" in schemas["SpawnAction"]["description"]
     assert "RESOURCE_DEPLETED" in schemas["HarvestAction"]["description"]
     assert schemas["SelfDestructAction"]["properties"]["type"]["const"] == (
         "SELF_DESTRUCT"

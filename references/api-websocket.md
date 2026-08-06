@@ -1,6 +1,6 @@
 <!-- Generated from contract-aligned upstream sources by scripts/sync_references.py. -->
 
-> Bundled from `arena-hero-doc` revision `03a945270b74c53b26cb52f2295a052f7e88c015`: `docs/api/websocket.md`.
+> Bundled from `arena-hero-doc` revision `166ef865a0ceec280b5fd8b9ffff80eb613674c7`: `docs/api/websocket.md`.
 
 # WebSocket
 
@@ -82,8 +82,6 @@ player's view.
     "status": "ACTIVE",
     "resources": 5,
     "population": 1,
-    "population_tier": 0,
-    "upkeep_next_tick": 0,
     "champion_beacon": {"position": [0, 0]},
     "objects": [
       {

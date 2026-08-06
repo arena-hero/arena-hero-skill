@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 03a945270b74c53b26cb52f2295a052f7e88c015: static/openapi.yaml.
+# Bundled from arena-hero-doc revision 166ef865a0ceec280b5fd8b9ffff80eb613674c7: static/openapi.yaml.
 openapi: 3.1.0
 info:
   title: Arena Hero Game HTTP API
@@ -377,7 +377,7 @@ components:
       type: object
       additionalProperties: false
       description: |
-        For a Unit, removes it before upkeep without refund or area damage; a
+        For a Unit, removes it before movement and spawn pricing without refund or area damage; a
         Worker's cargo becomes a resource pile on its final cell. For a Core,
         resolves after combat with no restrictions, destroys its inventory and
         owned Units, drops cargo and the Beacon, and enters normal respawn
@@ -422,6 +422,12 @@ components:
     SpawnAction:
       type: object
       additionalProperties: false
+      description: |
+        Creates one Unit after combat. Base prices are Worker 5, Vanguard 10,
+        and Ranger 12. With living population N, k is
+        max(0, floor((N - 20) / 5) + 1), and the price is the exact
+        round-half-up value of base_price * (13 / 10)^k. The server measures N
+        after same-Tick self-destruction and combat deaths.
       required: [type, unit_type]
       properties:
         type:

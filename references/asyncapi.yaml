@@ -1,5 +1,5 @@
 # Generated from contract-aligned upstream sources by scripts/sync_references.py.
-# Bundled from arena-hero-doc revision 03a945270b74c53b26cb52f2295a052f7e88c015: static/asyncapi.yaml.
+# Bundled from arena-hero-doc revision 166ef865a0ceec280b5fd8b9ffff80eb613674c7: static/asyncapi.yaml.
 asyncapi: 3.1.0
 info:
   title: Arena Hero Game WebSocket API
@@ -81,8 +81,6 @@ components:
               status: ACTIVE
               resources: 0
               population: 0
-              population_tier: 0
-              upkeep_next_tick: 0
               champion_beacon:
                 position: [0, 0]
               objects: []
@@ -185,8 +183,6 @@ components:
         - status
         - resources
         - population
-        - population_tier
-        - upkeep_next_tick
         - champion_beacon
         - objects
         - events
@@ -211,18 +207,10 @@ components:
         population:
           type: integer
           minimum: 0
-          description: Living owned Units, excluding the Core.
-        population_tier:
-          type: integer
-          minimum: 0
-          description: floor(population / 20).
-        upkeep_next_tick:
-          type: integer
-          minimum: 0
           description: |
-            tier * (tier + 1) / 2 for the current population. Core resources
-            pay first. Any deficit damages farthest excess Units while the
-            nearest 19 Units are protected; the Core takes no deficit damage.
+            Living owned Units, excluding the Core. The client can estimate the
+            next spawn price from this value, but the server settles it after
+            same-Tick self-destruction and combat deaths.
         champion_beacon:
           $ref: '#/components/schemas/ChampionBeacon'
         objects:
@@ -434,7 +422,6 @@ components:
         - UNIT_HEAL_SUCCEEDED
         - UNIT_HEAL_FAILED
         - WORKER_CARGO_DROPPED
-        - UPKEEP_PAID
         - CORE_DAMAGED
         - CORE_DESTROYED
         - CORE_RESOURCES_CAPTURED
@@ -476,11 +463,11 @@ components:
       additionalProperties: false
       description: |
         Event-specific reason_code, ID, position, and values rules are defined
-        in /api/resolution-results. UPKEEP_PAID reports due, paid, and deficit.
-        UNIT_DAMAGED with reason_code UPKEEP_DEFICIT reports damage and post-
-        damage HP for an excess Unit. CORE_DESTROYED uses reason_code ATTACK
-        with optional values.destroyed_by, or SELF_DESTRUCT without an attacker
-        or values. Optional fields are omitted, never null.
+        in /api/resolution-results. CORE_SPAWN_SUCCEEDED values.cost and
+        CORE_SPAWN_FAILED/INSUFFICIENT_RESOURCES values.required report the
+        settled dynamic Unit price. CORE_DESTROYED uses reason_code ATTACK with
+        optional values.destroyed_by, or SELF_DESTRUCT without an attacker or
+        values. Optional fields are omitted, never null.
       required: [event_id, tick, event_type]
       properties:
         event_id:
@@ -585,7 +572,7 @@ components:
       type: object
       additionalProperties: false
       description: |
-        For a Unit, removes it before upkeep without refund or area damage; a
+        For a Unit, removes it before movement and spawn pricing without refund or area damage; a
         Worker's cargo becomes a resource pile on its final cell. For a Core,
         resolves after combat with no restrictions, destroys its inventory and
         owned Units, drops cargo and the Beacon, and enters normal respawn
@@ -628,6 +615,12 @@ components:
     SpawnAction:
       type: object
       additionalProperties: false
+      description: |
+        Creates one Unit after combat. Base prices are Worker 5, Vanguard 10,
+        and Ranger 12. With living population N, k is
+        max(0, floor((N - 20) / 5) + 1), and the price is the exact
+        round-half-up value of base_price * (13 / 10)^k. The server measures N
+        after same-Tick self-destruction and combat deaths.
       required: [type, unit_type]
       properties:
         type:
